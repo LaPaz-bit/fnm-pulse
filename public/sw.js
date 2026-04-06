@@ -1,5 +1,5 @@
 // Cache version - change to force update
-const CACHE_VERSION = 'v2'
+const CACHE_VERSION = 'v3'
 const CACHE_NAME = `fnm-pulse-${CACHE_VERSION}`
 
 // Activate immediately, don't wait for old SW to release
