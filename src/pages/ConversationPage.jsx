@@ -74,7 +74,10 @@ export default function ConversationPage() {
           const inConvo =
             (m.sender_id === user.id && m.recipient_id === partnerId) ||
             (m.sender_id === partnerId && m.recipient_id === user.id)
-          if (inConvo) setMessages((prev) => [...prev, m])
+          if (inConvo)
+            setMessages((prev) =>
+              prev.some((msg) => msg.id === m.id) ? prev : [...prev, m]
+            )
         },
       )
       .subscribe()
@@ -89,19 +92,40 @@ export default function ConversationPage() {
   async function send() {
     const content = text.trim()
     if (!content || sending || !user) return
-    setSending(true)
-    const { error } = await supabase.from('direct_messages').insert({
+
+    // Optimistic update — show message instantly
+    const tempId = crypto.randomUUID()
+    const optimistic = {
+      id: tempId,
       sender_id: user.id,
       recipient_id: partnerId,
       content,
-    })
+      created_at: new Date().toISOString(),
+      is_read: false,
+      _optimistic: true,
+    }
+    setMessages((prev) => [...prev, optimistic])
+    setText('')
+    setSending(true)
+
+    const { data, error } = await supabase
+      .from('direct_messages')
+      .insert({ sender_id: user.id, recipient_id: partnerId, content })
+      .select()
+      .single()
     setSending(false)
+
     if (error) {
+      // Roll back optimistic message
+      setMessages((prev) => prev.filter((m) => m.id !== tempId))
       console.error('Failed to send message:', error)
       alert('Message failed to send. Please try again.')
       return
     }
-    setText('')
+
+    // Replace optimistic message with real one
+    setMessages((prev) => prev.map((m) => (m.id === tempId ? data : m)))
+
     sendPushNotification(
       partnerId,
       partner?.display_name ? `New message from ${partner.display_name}` : 'New message',
