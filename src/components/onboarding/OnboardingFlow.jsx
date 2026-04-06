@@ -6,9 +6,10 @@ import Button from '@/components/ui/Button'
 import logo from '@/assets/logo.png'
 import Input from '@/components/ui/Input'
 import Avatar from '@/components/ui/Avatar'
-import { Camera, ArrowRight, Sparkles } from 'lucide-react'
+import { Camera, ArrowRight, Sparkles, Bell } from 'lucide-react'
+import { usePushNotifications } from '@/hooks/usePushNotifications'
 
-const TOTAL_STEPS = 3
+const TOTAL_STEPS = 4
 
 export default function OnboardingFlow() {
   const { user, profile, refreshProfile } = useAuth()
@@ -118,7 +119,10 @@ export default function OnboardingFlow() {
           />
         )}
         {step === 3 && (
-          <Step3
+          <Step3Notifications onNext={() => setStep(4)} />
+        )}
+        {step === 4 && (
+          <Step4
             introPost={introPost}
             loading={loading}
             error={error}
@@ -212,7 +216,55 @@ function Step2({ displayName, bio, error, onDisplayNameChange, onBioChange, onNe
   )
 }
 
-function Step3({ introPost, loading, error, onIntroPostChange, onPost, onSkip }) {
+function Step3Notifications({ onNext }) {
+  const { supported, permission, subscribed, loading, subscribe } = usePushNotifications()
+  const done = subscribed || permission === 'denied'
+
+  async function handleEnable() {
+    await subscribe()
+    onNext()
+  }
+
+  return (
+    <div className="flex flex-col items-center text-center gap-6">
+      <div className="w-20 h-20 rounded-full bg-brand-gradient flex items-center justify-center shadow-glow mt-4">
+        <Bell size={36} color="white" strokeWidth={2.2} />
+      </div>
+      <div>
+        <h1 className="text-2xl font-black text-gray-900">Stay in the loop</h1>
+        <p className="text-gray-500 mt-2 leading-relaxed">
+          Get notified about messages, reactions, and encouragement from your community — even when the app is closed.
+        </p>
+      </div>
+
+      {!supported ? (
+        <p className="text-sm text-gray-400">
+          Push notifications aren&apos;t supported on this device. You can still use the app normally.
+        </p>
+      ) : permission === 'denied' ? (
+        <p className="text-sm text-gray-400">
+          Notifications are blocked. You can enable them later in your browser settings.
+        </p>
+      ) : null}
+
+      <div className="w-full flex flex-col gap-2 mt-2">
+        {supported && !done && (
+          <Button fullWidth size="lg" loading={loading} onClick={handleEnable}>
+            Enable Notifications <Bell size={18} />
+          </Button>
+        )}
+        <button
+          onClick={onNext}
+          className="text-sm text-gray-400 hover:text-gray-600 text-center transition-colors py-2"
+        >
+          {done || !supported ? 'Continue' : 'Maybe later'}
+        </button>
+      </div>
+    </div>
+  )
+}
+
+function Step4({ introPost, loading, error, onIntroPostChange, onPost, onSkip }) {
   return (
     <div className="flex flex-col gap-6">
       <div>
