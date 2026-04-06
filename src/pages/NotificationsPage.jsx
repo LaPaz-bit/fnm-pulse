@@ -3,7 +3,8 @@ import { useNavigate } from 'react-router-dom'
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/context/AuthContext'
 import Spinner from '@/components/ui/Spinner'
-import { Bell } from 'lucide-react'
+import Avatar from '@/components/ui/Avatar'
+import { Bell, MessageCircle } from 'lucide-react'
 import { formatRelativeTime } from '@/utils/formatDate'
 import { BADGE_META } from '@/utils/badges'
 
@@ -22,7 +23,7 @@ export default function NotificationsPage() {
     setLoading(true)
     const { data } = await supabase
       .from('notifications')
-      .select('*')
+      .select('*, actor:profiles!notifications_actor_id_fkey(id, display_name, username, avatar_url)')
       .eq('user_id', user.id)
       .order('created_at', { ascending: false })
       .limit(50)
@@ -85,6 +86,32 @@ export default function NotificationsPage() {
 }
 
 function NotificationItem({ notification: n }) {
+  const navigate = useNavigate()
+
+  if (n.type === 'dm_received' && n.actor) {
+    return (
+      <button
+        onClick={() => navigate(`/messages/${n.actor.id}`)}
+        className={[
+          'flex items-center gap-3 rounded-3xl p-3.5 w-full text-left transition',
+          !n.is_read ? 'bg-brand-lightest' : 'bg-white shadow-card',
+        ].join(' ')}
+      >
+        <Avatar src={n.actor.avatar_url} name={n.actor.display_name} size="md" />
+        <div className="flex-1 min-w-0">
+          <p className="text-sm font-bold text-gray-900 leading-tight">
+            {n.actor.display_name} sent you a message
+          </p>
+          <p className="text-xs text-gray-400 mt-0.5">@{n.actor.username}</p>
+          <p className="text-xs text-gray-300 mt-1">{formatRelativeTime(n.created_at)}</p>
+        </div>
+        {!n.is_read && (
+          <div className="w-2 h-2 rounded-full bg-brand-pink shrink-0" />
+        )}
+      </button>
+    )
+  }
+
   if (n.type === 'badge' && n.badge) {
     const meta = BADGE_META[n.badge.name] ?? { emoji: '🎖️', label: n.badge.name }
     return (
