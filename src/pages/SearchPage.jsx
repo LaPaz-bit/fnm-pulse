@@ -13,7 +13,6 @@ export default function SearchPage() {
         <div className="flex items-center gap-2.5">
           <Search size={17} className="text-brand-pink shrink-0" />
           <input
-            autoFocus
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Search posts or members…"
