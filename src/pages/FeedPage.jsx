@@ -1,13 +1,12 @@
 import { useState, useEffect, useCallback } from 'react'
-import { useOutletContext } from 'react-router-dom'
+import { useOutletContext, NavLink } from 'react-router-dom'
 import logo from '@/assets/logo.png'
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/context/AuthContext'
 import PostCard from '@/components/feed/PostCard'
-import SearchResults from '@/components/feed/SearchResults'
 import Spinner from '@/components/ui/Spinner'
 import Button from '@/components/ui/Button'
-import { Search, X, Plus } from 'lucide-react'
+import { Plus, Bell } from 'lucide-react'
 
 const PAGE_SIZE = 20
 
@@ -29,8 +28,25 @@ export default function FeedPage() {
   const [loadingMore, setLoadingMore] = useState(false)
   const [hasMore, setHasMore] = useState(true)
   const [error, setError] = useState(null)
-  const [searchOpen, setSearchOpen] = useState(false)
-  const [searchQuery, setSearchQuery] = useState('')
+  const [unreadNotifs, setUnreadNotifs] = useState(0)
+
+  useEffect(() => {
+    if (!user) return
+    async function fetchCount() {
+      const { count } = await supabase
+        .from('notifications')
+        .select('*', { count: 'exact', head: true })
+        .eq('user_id', user.id)
+        .eq('is_read', false)
+      setUnreadNotifs(count || 0)
+    }
+    fetchCount()
+    const channel = supabase
+      .channel('feed-notif-badge')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'notifications' }, () => fetchCount())
+      .subscribe()
+    return () => supabase.removeChannel(channel)
+  }, [user])
 
   const fetchPosts = useCallback(async (reset = true) => {
     reset ? setLoading(true) : setLoadingMore(true)
@@ -78,39 +94,25 @@ export default function FeedPage() {
     <div>
       {/* Header */}
       <header className="sticky top-0 z-30 bg-white border-b border-gray-200 px-4 py-3">
-        {searchOpen ? (
-          <div className="flex items-center gap-2.5">
-            <Search size={17} className="text-brand-pink shrink-0" />
-            <input
-              autoFocus
-              value={searchQuery}
-              onChange={e => setSearchQuery(e.target.value)}
-              placeholder="Search posts or members…"
-              className="flex-1 text-sm text-gray-900 placeholder:text-gray-300 outline-none bg-transparent"
-            />
-            <button onClick={() => { setSearchOpen(false); setSearchQuery('') }}
-              className="text-gray-300 hover:text-gray-500 shrink-0 transition">
-              <X size={17} />
-            </button>
-          </div>
-        ) : (
-          <div className="flex items-center justify-between">
-            <button onClick={openComposer}
-              className="w-9 h-9 flex items-center justify-center text-gray-900 hover:text-brand-pink transition">
-              <Plus size={20} strokeWidth={1.8} />
-            </button>
-            <img src={logo} alt="The Fit Nurse Movement" className="h-[22px]" />
-            <button onClick={() => setSearchOpen(true)}
-              className="w-9 h-9 flex items-center justify-center text-gray-900 hover:text-brand-pink transition">
-              <Search size={20} strokeWidth={1.8} />
-            </button>
-          </div>
-        )}
+        <div className="flex items-center justify-between">
+          <button onClick={openComposer}
+            className="w-9 h-9 flex items-center justify-center text-gray-900 hover:text-brand-pink transition">
+            <Plus size={20} strokeWidth={1.8} />
+          </button>
+          <img src={logo} alt="The Fit Nurse Movement" className="h-[22px]" />
+          <NavLink to="/notifications"
+            className="relative w-9 h-9 flex items-center justify-center text-gray-900 hover:text-brand-pink transition">
+            <Bell size={20} strokeWidth={1.8} />
+            {unreadNotifs > 0 && (
+              <span className="absolute top-0.5 right-0.5 min-w-[18px] h-[18px] flex items-center justify-center bg-red-500 text-white text-[10px] font-bold rounded-full px-1 leading-none">
+                {unreadNotifs > 99 ? '99+' : unreadNotifs}
+              </span>
+            )}
+          </NavLink>
+        </div>
       </header>
 
-      {searchOpen ? (
-        <SearchResults query={searchQuery} />
-      ) : loading ? (
+      {loading ? (
         <div className="flex justify-center py-20"><Spinner size="lg" /></div>
       ) : error ? (
         <div className="flex flex-col items-center gap-3 py-20 px-6 text-center">

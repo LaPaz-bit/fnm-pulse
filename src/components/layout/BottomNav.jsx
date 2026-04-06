@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { NavLink } from 'react-router-dom'
-import { Home, Target, Bell, MessageCircle } from 'lucide-react'
+import { Home, Target, Search, MessageCircle } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/context/AuthContext'
 import Avatar from '@/components/ui/Avatar'
@@ -64,8 +64,8 @@ export default function BottomNav() {
       >
         <Tab to="/" icon={Home} />
         <Tab to="/goals" icon={Target} />
-        <Tab to="/notifications" icon={Bell} badge={unreadNotifs} />
         <Tab to="/messages" icon={MessageCircle} badge={unreadDMs} />
+        <Tab to="/search" icon={Search} />
 
         {/* Profile tab with user avatar */}
         <NavLink

@@ -18,6 +18,7 @@ import NotificationsPage from '@/pages/NotificationsPage'
 import InboxPage from '@/pages/InboxPage'
 import ConversationPage from '@/pages/ConversationPage'
 import EditProfilePage from '@/pages/EditProfilePage'
+import SearchPage from '@/pages/SearchPage'
 import AdminPage from '@/pages/AdminPage'
 import CommunityGuidelinesPage from '@/pages/CommunityGuidelinesPage'
 
@@ -68,6 +69,7 @@ function AppRoutes() {
         <Route path="/leaderboard" element={<LeaderboardPage />} />
         <Route path="/notifications" element={<NotificationsPage />} />
         <Route path="/messages" element={<InboxPage />} />
+        <Route path="/search" element={<SearchPage />} />
         <Route path="/guidelines" element={<CommunityGuidelinesPage />} />
       </Route>
 
