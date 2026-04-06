@@ -22,11 +22,29 @@ export default function NotificationsPage() {
     setLoading(true)
     const { data } = await supabase
       .from('notifications')
-      .select('*, badge:badges!reference_id(id, name, description)')
+      .select('*')
       .eq('user_id', user.id)
       .order('created_at', { ascending: false })
       .limit(50)
-    setNotifications(data || [])
+
+    // Enrich badge notifications with badge details
+    const items = data || []
+    const badgeIds = items
+      .filter(n => n.type === 'badge' && n.reference_id)
+      .map(n => n.reference_id)
+    let badgeMap = {}
+    if (badgeIds.length > 0) {
+      const { data: badges } = await supabase
+        .from('badges')
+        .select('id, name, description')
+        .in('id', badgeIds)
+      badgeMap = Object.fromEntries((badges || []).map(b => [b.id, b]))
+    }
+    setNotifications(items.map(n =>
+      n.type === 'badge' && badgeMap[n.reference_id]
+        ? { ...n, badge: badgeMap[n.reference_id] }
+        : n
+    ))
     setLoading(false)
 
     // Mark all as read
