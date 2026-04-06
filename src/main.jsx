@@ -8,6 +8,8 @@ import App from './App.jsx'
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
     navigator.serviceWorker.register('/sw.js').then((reg) => {
+      // Force check for new SW version
+      reg.update()
       // Clear PWA badge when app is opened
       if (reg.active) reg.active.postMessage('clear-badge')
       reg.addEventListener('controllerchange', () => {

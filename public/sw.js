@@ -1,3 +1,23 @@
+// Cache version - change to force update
+const CACHE_VERSION = 'v2'
+const CACHE_NAME = `fnm-pulse-${CACHE_VERSION}`
+
+// Activate immediately, don't wait for old SW to release
+self.addEventListener('install', (event) => {
+  self.skipWaiting()
+})
+
+// Clear old caches and take control immediately
+self.addEventListener('activate', (event) => {
+  event.waitUntil(
+    caches.keys().then((keys) =>
+      Promise.all(
+        keys.filter((k) => k !== CACHE_NAME).map((k) => caches.delete(k))
+      )
+    ).then(() => self.clients.claim())
+  )
+})
+
 self.addEventListener('push', (event) => {
   const data = event.data?.json() ?? {}
   const title = data.title || 'FNM Pulse'
@@ -9,7 +29,6 @@ self.addEventListener('push', (event) => {
   }
   event.waitUntil(
     self.registration.showNotification(title, options).then(() => {
-      // Update PWA app icon badge count
       if ('setAppBadge' in navigator) {
         navigator.setAppBadge().catch(() => {})
       }
