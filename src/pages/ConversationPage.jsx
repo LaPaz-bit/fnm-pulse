@@ -142,7 +142,7 @@ export default function ConversationPage() {
   }
 
   return (
-    <div className="flex flex-col h-[100dvh]">
+    <div className="fixed inset-0 flex flex-col bg-canvas">
       {/* Header */}
       <header className="shrink-0 bg-white border-b border-gray-200 px-4 py-3 flex items-center gap-3 z-30">
         <button
@@ -165,7 +165,7 @@ export default function ConversationPage() {
       </header>
 
       {/* Messages */}
-      <div className="flex-1 overflow-y-auto px-4 py-4 space-y-2 bg-canvas">
+      <div className="flex-1 overflow-y-auto px-4 py-4 space-y-2">
         {loading ? (
           <div className="flex justify-center py-10"><Spinner /></div>
         ) : messages.length === 0 ? (
