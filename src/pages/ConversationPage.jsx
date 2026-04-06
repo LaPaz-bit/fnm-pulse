@@ -90,21 +90,24 @@ export default function ConversationPage() {
     const content = text.trim()
     if (!content || sending || !user) return
     setSending(true)
-    setText('')
     const { error } = await supabase.from('direct_messages').insert({
       sender_id: user.id,
       recipient_id: partnerId,
       content,
     })
     setSending(false)
-    if (!error) {
-      sendPushNotification(
-        partnerId,
-        partner?.display_name ? `New message from ${partner.display_name}` : 'New message',
-        content.length > 80 ? content.slice(0, 80) + '…' : content,
-        `/messages/${user.id}`,
-      )
+    if (error) {
+      console.error('Failed to send message:', error)
+      alert('Message failed to send. Please try again.')
+      return
     }
+    setText('')
+    sendPushNotification(
+      partnerId,
+      partner?.display_name ? `New message from ${partner.display_name}` : 'New message',
+      content.length > 80 ? content.slice(0, 80) + '…' : content,
+      `/messages/${user.id}`,
+    )
   }
 
   function handleKeyDown(e) {
