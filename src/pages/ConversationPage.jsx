@@ -10,7 +10,7 @@ import { sendPushNotification } from '@/utils/pushNotifications'
 
 export default function ConversationPage() {
   const { partnerId } = useParams()
-  const { user } = useAuth()
+  const { user, profile: myProfile } = useAuth()
   const navigate = useNavigate()
 
   const [partner, setPartner] = useState(null)
@@ -135,7 +135,7 @@ export default function ConversationPage() {
 
     sendPushNotification(
       partnerId,
-      partner?.display_name ? `New message from ${partner.display_name}` : 'New message',
+      myProfile?.display_name ? `New message from ${myProfile.display_name}` : 'New message',
       content.length > 80 ? content.slice(0, 80) + '…' : content,
       `/messages/${user.id}`,
     )

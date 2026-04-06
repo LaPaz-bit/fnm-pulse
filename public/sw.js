@@ -7,7 +7,14 @@ self.addEventListener('push', (event) => {
     badge: '/badge-72.png',
     data: { url: data.url || '/' },
   }
-  event.waitUntil(self.registration.showNotification(title, options))
+  event.waitUntil(
+    self.registration.showNotification(title, options).then(() => {
+      // Update PWA app icon badge count
+      if ('setAppBadge' in navigator) {
+        navigator.setAppBadge().catch(() => {})
+      }
+    })
+  )
 })
 
 self.addEventListener('notificationclick', (event) => {
@@ -24,4 +31,11 @@ self.addEventListener('notificationclick', (event) => {
       }
     })
   )
+})
+
+// Clear badge when app gains focus
+self.addEventListener('message', (event) => {
+  if (event.data === 'clear-badge' && 'clearAppBadge' in navigator) {
+    navigator.clearAppBadge().catch(() => {})
+  }
 })

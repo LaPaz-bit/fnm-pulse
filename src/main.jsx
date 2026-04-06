@@ -7,7 +7,13 @@ import App from './App.jsx'
 
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
-    navigator.serviceWorker.register('/sw.js').catch(() => {})
+    navigator.serviceWorker.register('/sw.js').then((reg) => {
+      // Clear PWA badge when app is opened
+      if (reg.active) reg.active.postMessage('clear-badge')
+      reg.addEventListener('controllerchange', () => {
+        reg.active?.postMessage('clear-badge')
+      })
+    }).catch(() => {})
   })
 }
 
