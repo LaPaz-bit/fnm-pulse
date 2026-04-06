@@ -38,6 +38,16 @@ function AppRoutes() {
         }
       />
 
+      {/* Conversation — full screen, no bottom nav */}
+      <Route
+        path="/messages/:partnerId"
+        element={
+          <ProtectedRoute requireOnboarding>
+            <ConversationPage />
+          </ProtectedRoute>
+        }
+      />
+
       {/* App shell (auth + onboarding required) */}
       <Route
         element={
@@ -56,7 +66,6 @@ function AppRoutes() {
         <Route path="/leaderboard" element={<LeaderboardPage />} />
         <Route path="/notifications" element={<NotificationsPage />} />
         <Route path="/messages" element={<InboxPage />} />
-        <Route path="/messages/:partnerId" element={<ConversationPage />} />
         <Route path="/guidelines" element={<CommunityGuidelinesPage />} />
       </Route>
 
