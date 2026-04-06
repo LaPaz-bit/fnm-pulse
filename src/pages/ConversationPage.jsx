@@ -133,9 +133,16 @@ export default function ConversationPage() {
     // Replace optimistic message with real one
     setMessages((prev) => prev.map((m) => (m.id === tempId ? data : m)))
 
+    // Fetch sender name fresh to avoid stale profile data
+    const { data: sender } = await supabase
+      .from('profiles')
+      .select('display_name')
+      .eq('id', user.id)
+      .single()
+    const senderName = sender?.display_name || myProfile?.display_name
     sendPushNotification(
       partnerId,
-      myProfile?.display_name ? `New message from ${myProfile.display_name}` : 'New message',
+      senderName ? `New message from ${senderName}` : 'New message',
       content.length > 80 ? content.slice(0, 80) + '…' : content,
       `/messages/${user.id}`,
     )
