@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/context/AuthContext'
@@ -6,10 +6,17 @@ import Button from '@/components/ui/Button'
 import logo from '@/assets/logo.png'
 import Input from '@/components/ui/Input'
 import Avatar from '@/components/ui/Avatar'
-import { Camera, ArrowRight, Sparkles, Bell } from 'lucide-react'
+import { Camera, ArrowRight, Sparkles, Bell, Share, Plus, Download, Check } from 'lucide-react'
 import { usePushNotifications } from '@/hooks/usePushNotifications'
 
-const TOTAL_STEPS = 4
+const TOTAL_STEPS = 5
+
+function isStandalone() {
+  return window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true
+}
+function isIOS() {
+  return /iphone|ipad|ipod/i.test(window.navigator.userAgent) && !window.MSStream
+}
 
 export default function OnboardingFlow() {
   const { user, profile, refreshProfile } = useAuth()
@@ -23,6 +30,22 @@ export default function OnboardingFlow() {
   const [introPost, setIntroPost] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
+  const [installPromptEvent, setInstallPromptEvent] = useState(null)
+  const [installed, setInstalled] = useState(isStandalone())
+
+  useEffect(() => {
+    const handler = (e) => {
+      e.preventDefault()
+      setInstallPromptEvent(e)
+    }
+    window.addEventListener('beforeinstallprompt', handler)
+    const installedHandler = () => setInstalled(true)
+    window.addEventListener('appinstalled', installedHandler)
+    return () => {
+      window.removeEventListener('beforeinstallprompt', handler)
+      window.removeEventListener('appinstalled', installedHandler)
+    }
+  }, [])
 
   function handleAvatarChange(e) {
     const file = e.target.files?.[0]
@@ -119,10 +142,18 @@ export default function OnboardingFlow() {
           />
         )}
         {step === 3 && (
-          <Step3Notifications onNext={() => setStep(4)} />
+          <Step3Install
+            installed={installed}
+            installPromptEvent={installPromptEvent}
+            onInstalled={() => setInstalled(true)}
+            onNext={() => setStep(4)}
+          />
         )}
         {step === 4 && (
-          <Step4
+          <Step4Notifications onNext={() => setStep(5)} />
+        )}
+        {step === 5 && (
+          <Step5
             introPost={introPost}
             loading={loading}
             error={error}
@@ -216,7 +247,94 @@ function Step2({ displayName, bio, error, onDisplayNameChange, onBioChange, onNe
   )
 }
 
-function Step3Notifications({ onNext }) {
+function Step3Install({ installed, installPromptEvent, onInstalled, onNext }) {
+  const ios = isIOS()
+  const [prompting, setPrompting] = useState(false)
+
+  async function handleInstall() {
+    if (!installPromptEvent) return
+    setPrompting(true)
+    installPromptEvent.prompt()
+    const { outcome } = await installPromptEvent.userChoice
+    setPrompting(false)
+    if (outcome === 'accepted') {
+      onInstalled()
+      onNext()
+    }
+  }
+
+  if (installed) {
+    return (
+      <div className="flex flex-col items-center text-center gap-6">
+        <div className="w-20 h-20 rounded-full bg-brand-gradient flex items-center justify-center shadow-glow mt-4">
+          <Check size={40} color="white" strokeWidth={2.5} />
+        </div>
+        <div>
+          <h1 className="text-2xl font-black text-gray-900">You're all set!</h1>
+          <p className="text-gray-500 mt-2">The app is already installed on your device.</p>
+        </div>
+        <Button fullWidth size="lg" onClick={onNext} className="mt-2">
+          Continue <ArrowRight size={18} />
+        </Button>
+      </div>
+    )
+  }
+
+  return (
+    <div className="flex flex-col items-center text-center gap-6">
+      <div className="w-20 h-20 rounded-full bg-brand-gradient flex items-center justify-center shadow-glow mt-4">
+        <Download size={36} color="white" strokeWidth={2.2} />
+      </div>
+      <div>
+        <h1 className="text-2xl font-black text-gray-900">Install the app</h1>
+        <p className="text-gray-500 mt-2 leading-relaxed">
+          Add FNM Pulse to your home screen for the best experience — faster, fullscreen, and required for push notifications on iPhone.
+        </p>
+      </div>
+
+      {ios ? (
+        <div className="w-full rounded-2xl border-2 border-brand-soft bg-brand-light/30 p-4 text-left space-y-3">
+          <p className="text-xs font-semibold text-brand-pink uppercase tracking-wide">How to install on iPhone</p>
+          <div className="flex items-start gap-3">
+            <div className="w-6 h-6 rounded-full bg-brand-pink text-white text-xs font-bold flex items-center justify-center shrink-0">1</div>
+            <p className="text-sm text-gray-700">
+              Tap the <Share size={14} className="inline mx-0.5 -mt-0.5" /> <strong>Share</strong> button at the bottom of Safari.
+            </p>
+          </div>
+          <div className="flex items-start gap-3">
+            <div className="w-6 h-6 rounded-full bg-brand-pink text-white text-xs font-bold flex items-center justify-center shrink-0">2</div>
+            <p className="text-sm text-gray-700">
+              Scroll and tap <Plus size={14} className="inline mx-0.5 -mt-0.5" /> <strong>Add to Home Screen</strong>.
+            </p>
+          </div>
+          <div className="flex items-start gap-3">
+            <div className="w-6 h-6 rounded-full bg-brand-pink text-white text-xs font-bold flex items-center justify-center shrink-0">3</div>
+            <p className="text-sm text-gray-700">
+              Open FNM Pulse from your home screen and finish signing in.
+            </p>
+          </div>
+        </div>
+      ) : installPromptEvent ? (
+        <Button fullWidth size="lg" loading={prompting} onClick={handleInstall}>
+          Install App <Download size={18} />
+        </Button>
+      ) : (
+        <p className="text-sm text-gray-400">
+          Install isn&apos;t available in this browser. Try opening FNM Pulse in Chrome or Safari.
+        </p>
+      )}
+
+      <button
+        onClick={onNext}
+        className="text-sm text-gray-400 hover:text-gray-600 text-center transition-colors py-2"
+      >
+        {ios ? "I'll do it later" : 'Maybe later'}
+      </button>
+    </div>
+  )
+}
+
+function Step4Notifications({ onNext }) {
   const { supported, permission, subscribed, loading, subscribe } = usePushNotifications()
   const done = subscribed || permission === 'denied'
 
@@ -264,7 +382,7 @@ function Step3Notifications({ onNext }) {
   )
 }
 
-function Step4({ introPost, loading, error, onIntroPostChange, onPost, onSkip }) {
+function Step5({ introPost, loading, error, onIntroPostChange, onPost, onSkip }) {
   return (
     <div className="flex flex-col gap-6">
       <div>
