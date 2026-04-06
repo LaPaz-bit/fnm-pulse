@@ -20,15 +20,11 @@ export default function ConversationPage() {
   const [sending, setSending] = useState(false)
   const bottomRef = useRef(null)
 
-  // Scroll messages into view when keyboard opens on iOS
+  // Lock body scroll to prevent iOS from scrolling page when keyboard opens
   useEffect(() => {
-    const vv = window.visualViewport
-    if (!vv) return
-    function onResize() {
-      bottomRef.current?.scrollIntoView({ behavior: 'instant' })
-    }
-    vv.addEventListener('resize', onResize)
-    return () => vv.removeEventListener('resize', onResize)
+    const original = document.body.style.overflow
+    document.body.style.overflow = 'hidden'
+    return () => { document.body.style.overflow = original }
   }, [])
 
   // Fetch partner profile
@@ -153,7 +149,7 @@ export default function ConversationPage() {
   }
 
   return (
-    <div className="flex flex-col h-[100dvh] bg-canvas">
+    <div className="fixed inset-0 flex flex-col bg-canvas">
       {/* Header */}
       <header className="shrink-0 bg-white border-b border-gray-200 px-4 py-3 flex items-center gap-3 z-30">
         <button
