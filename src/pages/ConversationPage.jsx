@@ -19,6 +19,18 @@ export default function ConversationPage() {
   const [text, setText] = useState('')
   const [sending, setSending] = useState(false)
   const bottomRef = useRef(null)
+  const containerRef = useRef(null)
+
+  // Keep layout stable when virtual keyboard opens (iOS fallback)
+  useEffect(() => {
+    const vv = window.visualViewport
+    if (!vv || !containerRef.current) return
+    function onResize() {
+      containerRef.current.style.height = `${vv.height}px`
+    }
+    vv.addEventListener('resize', onResize)
+    return () => vv.removeEventListener('resize', onResize)
+  }, [])
 
   // Fetch partner profile
   useEffect(() => {
@@ -142,7 +154,7 @@ export default function ConversationPage() {
   }
 
   return (
-    <div className="fixed inset-0 flex flex-col bg-canvas">
+    <div ref={containerRef} className="fixed inset-0 flex flex-col bg-canvas">
       {/* Header */}
       <header className="shrink-0 bg-white border-b border-gray-200 px-4 py-3 flex items-center gap-3 z-30">
         <button
