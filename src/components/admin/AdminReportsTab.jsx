@@ -6,10 +6,13 @@ import Button from '@/components/ui/Button'
 import { formatRelativeTime } from '@/utils/formatDate'
 import { CheckCircle, Trash2 } from 'lucide-react'
 
+const PAGE_SIZE = 50
+
 export default function AdminReportsTab() {
   const [reports, setReports] = useState([])
   const [loading, setLoading] = useState(true)
   const [filter, setFilter] = useState('open')
+  const [hasMore, setHasMore] = useState(false)
 
   useEffect(() => {
     setLoading(true)
@@ -22,11 +25,29 @@ export default function AdminReportsTab() {
       `)
       .eq('status', filter)
       .order('created_at', { ascending: false })
+      .limit(PAGE_SIZE)
       .then(({ data }) => {
         setReports(data || [])
+        setHasMore((data || []).length === PAGE_SIZE)
         setLoading(false)
       })
   }, [filter])
+
+  async function loadMore() {
+    const { data } = await supabase
+      .from('reported_posts')
+      .select(`
+        id, reason, status, created_at,
+        reporter:profiles!reporter_id(id, display_name, avatar_url, username),
+        post:posts!target_id(id, content, author_id, author:profiles!author_id(display_name, username))
+      `)
+      .eq('status', filter)
+      .order('created_at', { ascending: false })
+      .range(reports.length, reports.length + PAGE_SIZE - 1)
+    const newRows = data || []
+    setReports(prev => [...prev, ...newRows])
+    setHasMore(newRows.length === PAGE_SIZE)
+  }
 
   async function dismiss(reportId) {
     await supabase.rpc('admin_dismiss_report', { report_id: reportId })
@@ -62,6 +83,7 @@ export default function AdminReportsTab() {
       ) : reports.length === 0 ? (
         <p className="text-center text-sm text-gray-400 py-12">No {filter} reports.</p>
       ) : (
+        <div>
         <ul className="divide-y divide-gray-100">
           {reports.map((r) => (
             <li key={r.id} className="px-4 py-4">
@@ -105,6 +127,12 @@ export default function AdminReportsTab() {
             </li>
           ))}
         </ul>
+        {hasMore && (
+          <div className="flex justify-center py-4">
+            <Button variant="ghost" size="sm" onClick={loadMore}>Load more</Button>
+          </div>
+        )}
+        </div>
       )}
     </div>
   )

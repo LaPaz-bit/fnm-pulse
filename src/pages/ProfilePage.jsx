@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { useParams, useNavigate } from 'react-router-dom'
+import { useParams, useNavigate, useOutletContext } from 'react-router-dom'
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/context/AuthContext'
 import Avatar from '@/components/ui/Avatar'
@@ -9,7 +9,7 @@ import PostCard from '@/components/feed/PostCard'
 import BadgeDisplay from '@/components/profile/BadgeDisplay'
 import EditProfileModal from '@/components/profile/EditProfileModal'
 import { usePushNotifications } from '@/hooks/usePushNotifications'
-import { ArrowLeft, Pencil, Trophy, MessageCircle, Trash2, LogOut, Bell, BellOff, ShieldCheck, Grid3X3, MoreHorizontal } from 'lucide-react'
+import { ArrowLeft, Plus, Pencil, Trophy, MessageCircle, Trash2, LogOut, Bell, BellOff, ShieldCheck, Grid3X3, MoreHorizontal } from 'lucide-react'
 
 const POST_SELECT = `
   *,
@@ -24,6 +24,7 @@ export default function ProfilePage() {
   const { userId } = useParams()
   const { user, profile: ownProfile, signOut, refreshProfile } = useAuth()
   const navigate = useNavigate()
+  const { openComposer } = useOutletContext()
 
   const targetId = userId || user?.id
   const isOwn = targetId === user?.id
@@ -117,7 +118,7 @@ export default function ProfilePage() {
     )
   }
 
-  const postsWithMedia = posts.filter(p => p.media_urls?.length > 0)
+  const postsWithMedia = posts.filter(p => p.media_urls?.some(url => url))
   const showGrid = gridView && postsWithMedia.length > 0
 
   return (
@@ -130,10 +131,15 @@ export default function ProfilePage() {
               className="w-9 h-9 flex items-center justify-center text-gray-900 hover:text-brand-pink transition">
               <ArrowLeft size={22} strokeWidth={1.8} />
             </button>
-          ) : null}
+          ) : (
+            <button onClick={openComposer}
+              className="w-9 h-9 flex items-center justify-center text-gray-900 hover:text-brand-pink transition">
+              <Plus size={22} strokeWidth={1.8} />
+            </button>
+          )}
         </div>
-        <span className="font-bold text-sm text-gray-900">
-          {profile.username ? `@${profile.username}` : (profile.display_name || 'Profile')}
+        <span className="font-display text-2xl font-black text-gray-900 italic">
+          {profile.username || profile.display_name || 'Profile'}
         </span>
         <div className="w-9 flex justify-end">
           {isOwn && (
@@ -168,6 +174,10 @@ export default function ProfilePage() {
                     <button onClick={signOut}
                       className="flex items-center gap-3 w-full px-4 py-3 text-sm text-red-500 hover:bg-gray-50 transition-colors">
                       <LogOut size={14} /> Log Out
+                    </button>
+                    <button onClick={() => { setDeleteConfirm(true); setMenuOpen(false) }}
+                      className="flex items-center gap-3 w-full px-4 py-3 text-sm text-red-500 hover:bg-gray-50 transition-colors">
+                      <Trash2 size={14} /> Delete Account
                     </button>
                   </div>
                 </>
@@ -282,40 +292,32 @@ export default function ProfilePage() {
         ))
       )}
 
-      {/* ── Danger zone ── */}
-      {isOwn && (
-        <div className="px-5 py-6 mt-2">
-          <div className="h-px bg-gray-100 mb-6" />
-          {!deleteConfirm ? (
-            <button onClick={() => setDeleteConfirm(true)}
-              className="flex items-center gap-2 text-xs text-gray-300 hover:text-red-400 font-medium transition-colors">
-              <Trash2 size={13} /> Delete My Account
-            </button>
-          ) : (
-            <div className="flex flex-col gap-3 p-4 rounded-3xl border border-red-200 bg-red-50">
-              <p className="text-sm font-bold text-red-700">⚠️ This cannot be undone.</p>
-              <p className="text-xs text-red-500 leading-relaxed">
-                All your posts, comments, and data will be permanently deleted.
-                Type <strong>DELETE</strong> to confirm.
-              </p>
-              <input
-                value={deleteInput}
-                onChange={e => setDeleteInput(e.target.value)}
-                placeholder="Type DELETE"
-                className="w-full rounded-2xl border border-red-200 bg-white px-3.5 py-2.5 text-sm outline-none focus:border-red-400"
-              />
-              <div className="flex gap-2">
-                <Button variant="danger" size="sm" disabled={deleteInput !== 'DELETE'}
-                  loading={deleting} onClick={handleDelete} className="flex-1">
-                  Delete Account
-                </Button>
-                <Button variant="ghost" size="sm"
-                  onClick={() => { setDeleteConfirm(false); setDeleteInput('') }} className="flex-1">
-                  Cancel
-                </Button>
-              </div>
+      {/* ── Delete account confirmation modal ── */}
+      {deleteConfirm && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-6">
+          <div className="w-full max-w-sm flex flex-col gap-3 p-5 rounded-3xl border border-red-200 bg-white shadow-lg animate-scale-in">
+            <p className="text-sm font-bold text-red-700">This cannot be undone.</p>
+            <p className="text-xs text-red-500 leading-relaxed">
+              All your posts, comments, and data will be permanently deleted.
+              Type <strong>DELETE</strong> to confirm.
+            </p>
+            <input
+              value={deleteInput}
+              onChange={e => setDeleteInput(e.target.value)}
+              placeholder="Type DELETE"
+              className="w-full rounded-2xl border border-red-200 bg-white px-3.5 py-2.5 text-sm outline-none focus:border-red-400"
+            />
+            <div className="flex gap-2">
+              <Button variant="danger" size="sm" disabled={deleteInput !== 'DELETE'}
+                loading={deleting} onClick={handleDelete} className="flex-1">
+                Delete Account
+              </Button>
+              <Button variant="ghost" size="sm"
+                onClick={() => { setDeleteConfirm(false); setDeleteInput('') }} className="flex-1">
+                Cancel
+              </Button>
             </div>
-          )}
+          </div>
         </div>
       )}
 

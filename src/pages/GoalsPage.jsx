@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '@/lib/supabase'
+import { useAuth } from '@/context/AuthContext'
 import GoalCard from '@/components/goals/GoalCard'
 import ChallengeCard from '@/components/goals/ChallengeCard'
 import Spinner from '@/components/ui/Spinner'
@@ -22,6 +23,7 @@ function isExpired(item) {
 }
 
 export default function GoalsPage() {
+  const { user } = useAuth()
   const [goals, setGoals] = useState([])
   const [challenges, setChallenges] = useState([])
   const [loading, setLoading] = useState(true)
@@ -38,11 +40,12 @@ export default function GoalsPage() {
     })
   }, [])
 
-  const activeGoals      = goals.filter(g => g.status === 'active' && !isExpired(g))
-  const archivedGoals    = goals.filter(g => g.status !== 'active' || isExpired(g))
-  const activeChallenges = challenges.filter(c => c.status !== 'ended' && !isExpired(c))
-  const archivedChallenges = challenges.filter(c => c.status === 'ended' || isExpired(c))
-  const hasArchived      = archivedGoals.length > 0 || archivedChallenges.length > 0
+  const isMember = (members) => members?.some(m => m.user_id === user?.id)
+  const myActiveGoals      = goals.filter(g => g.status === 'active' && !isExpired(g) && isMember(g.goal_members))
+  const myArchivedGoals    = goals.filter(g => isMember(g.goal_members) && (g.status !== 'active' || isExpired(g)))
+  const activeChallenges   = challenges.filter(c => c.status !== 'ended' && !isExpired(c) && isMember(c.challenge_members))
+  const archivedChallenges = challenges.filter(c => isMember(c.challenge_members) && (c.status === 'ended' || isExpired(c)))
+  const hasArchived      = myArchivedGoals.length > 0 || archivedChallenges.length > 0
 
   return (
     <div>
@@ -73,11 +76,11 @@ export default function GoalsPage() {
             icon={<Target size={14} className="text-white" />}
             iconBg="bg-brand-gradient"
             title="Community Goals"
-            count={activeGoals.length}
+            count={myActiveGoals.length}
           >
-            {activeGoals.length === 0 ? (
-              <EmptySection emoji="🎯" message="No active goals yet. Create a post and toggle Goal Proposal!" />
-            ) : activeGoals.map(g => <GoalCard key={g.id} goal={g} />)}
+            {myActiveGoals.length === 0 ? (
+              <EmptySection emoji="🎯" message="You haven't joined any goals yet. Join a goal from the feed to see it here!" />
+            ) : myActiveGoals.map(g => <GoalCard key={g.id} goal={g} />)}
           </Section>
 
           {/* Archived */}
@@ -88,12 +91,12 @@ export default function GoalsPage() {
                 className="flex items-center gap-2 w-full text-left py-2 text-xs font-bold text-gray-400 hover:text-gray-600 uppercase tracking-wider transition-colors"
               >
                 {archivedOpen ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
-                Archived ({archivedGoals.length + archivedChallenges.length})
+                Archived ({myArchivedGoals.length + archivedChallenges.length})
               </button>
               {archivedOpen && (
                 <div className="flex flex-col gap-3 mt-2 animate-fade-up">
                   {archivedChallenges.map(c => <ChallengeCard key={c.id} challenge={c} isArchived />)}
-                  {archivedGoals.map(g => <GoalCard key={g.id} goal={g} isArchived />)}
+                  {myArchivedGoals.map(g => <GoalCard key={g.id} goal={g} isArchived />)}
                 </div>
               )}
             </div>

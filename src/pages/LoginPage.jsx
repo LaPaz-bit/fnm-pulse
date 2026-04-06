@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { Link, useNavigate, useLocation } from 'react-router-dom'
+import logo from '@/assets/logo.png'
 import { useAuth } from '@/context/AuthContext'
 import Input from '@/components/ui/Input'
 import Button from '@/components/ui/Button'
@@ -79,24 +80,15 @@ export function AuthShell({ heading, subheading, children }) {
   return (
     <div className="min-h-screen flex flex-col max-w-lg mx-auto overflow-hidden">
       {/* Hero */}
-      <div className="relative bg-brand-gradient px-6 pt-16 pb-14 overflow-hidden">
-        {/* Decorative circles */}
-        <div className="absolute -top-8 -right-8 w-40 h-40 rounded-full bg-white/10" />
-        <div className="absolute -bottom-12 -left-10 w-52 h-52 rounded-full bg-white/8" />
-        <div className="absolute top-8 right-20 w-16 h-16 rounded-full bg-white/10" />
-
-        <div className="relative">
-          <h1 className="font-display text-5xl font-black text-white italic tracking-tight leading-none">
-            FNM<br />Pulse
-          </h1>
-          <p className="text-white/70 text-sm mt-3 font-medium tracking-wide">
-            Your community. Your journey.
-          </p>
-        </div>
+      <div className="px-6 pt-16 pb-8">
+        <img src={logo} alt="The Fit Nurse Movement" className="h-8" />
+        <p className="text-gray-400 text-sm mt-3 font-medium tracking-wide">
+          Your community. Your journey.
+        </p>
       </div>
 
       {/* Card */}
-      <div className="flex-1 px-6 py-8 -mt-5 bg-white rounded-t-[2rem] shadow-[0_-4px_30px_rgba(250,94,189,0.1)]">
+      <div className="flex-1 px-6 py-8">
         <h2 className="font-display text-3xl font-black text-gray-900 italic mb-1">{heading}</h2>
         {subheading && <p className="text-gray-400 text-sm mb-7 font-medium">{subheading}</p>}
         {children}

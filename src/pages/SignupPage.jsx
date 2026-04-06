@@ -75,7 +75,7 @@ export default function SignupPage() {
 
   return (
     <AuthShell
-      heading="Join the FNM Community! 🚀"
+      heading="Join the FNM Community!"
       subheading="Sign up — it's free and totally worth it."
     >
       <form onSubmit={handleSubmit} className="flex flex-col gap-4">

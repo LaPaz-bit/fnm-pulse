@@ -118,7 +118,12 @@ export default function SearchResults({ query }) {
                 </span>
               </div>
               {posts.map(post => (
-                <PostCard key={post.id} post={post} />
+                <PostCard
+                  key={post.id}
+                  post={post}
+                  onDeleted={(id) => setPosts(prev => prev.filter(p => p.id !== id))}
+                  onUpdated={(p) => setPosts(prev => prev.map(x => x.id === p.id ? { ...x, ...p } : x))}
+                />
               ))}
             </div>
           )}

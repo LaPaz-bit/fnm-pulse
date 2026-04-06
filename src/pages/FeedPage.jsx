@@ -1,12 +1,13 @@
 import { useState, useEffect, useCallback } from 'react'
-import { useOutletContext, useNavigate } from 'react-router-dom'
+import { useOutletContext } from 'react-router-dom'
+import logo from '@/assets/logo.png'
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/context/AuthContext'
 import PostCard from '@/components/feed/PostCard'
 import SearchResults from '@/components/feed/SearchResults'
 import Spinner from '@/components/ui/Spinner'
 import Button from '@/components/ui/Button'
-import { Search, X, Bell, MessageCircle } from 'lucide-react'
+import { Search, X, Plus } from 'lucide-react'
 
 const PAGE_SIZE = 20
 
@@ -22,7 +23,6 @@ const POST_SELECT = `
 export default function FeedPage() {
   const { user } = useAuth()
   const { refreshKey, openComposer } = useOutletContext()
-  const navigate = useNavigate()
 
   const [posts, setPosts] = useState([])
   const [loading, setLoading] = useState(true)
@@ -31,7 +31,6 @@ export default function FeedPage() {
   const [error, setError] = useState(null)
   const [searchOpen, setSearchOpen] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
-  const [unreadCount, setUnreadCount] = useState(0)
 
   const fetchPosts = useCallback(async (reset = true) => {
     reset ? setLoading(true) : setLoadingMore(true)
@@ -59,15 +58,6 @@ export default function FeedPage() {
 
   useEffect(() => { fetchPosts(true) }, [refreshKey])
 
-  useEffect(() => {
-    if (!user) return
-    supabase
-      .from('notifications')
-      .select('id', { count: 'exact', head: true })
-      .eq('user_id', user.id)
-      .eq('is_read', false)
-      .then(({ count }) => setUnreadCount(count || 0))
-  }, [user])
 
   useEffect(() => {
     const channel = supabase
@@ -105,26 +95,15 @@ export default function FeedPage() {
           </div>
         ) : (
           <div className="flex items-center justify-between">
-            <span className="font-display text-2xl font-black text-gradient italic">
-              FNM Pulse
-            </span>
-            <div className="flex items-center gap-0.5">
-              <button onClick={() => setSearchOpen(true)}
-                className="w-10 h-10 flex items-center justify-center text-gray-900 hover:text-brand-pink transition">
-                <Search size={22} strokeWidth={1.8} />
-              </button>
-              <button onClick={() => navigate('/notifications')}
-                className="relative w-10 h-10 flex items-center justify-center text-gray-900 hover:text-brand-pink transition">
-                <Bell size={22} strokeWidth={1.8} />
-                {unreadCount > 0 && (
-                  <span className="absolute top-2 right-2 w-2 h-2 bg-brand-pink rounded-full ring-2 ring-white" />
-                )}
-              </button>
-              <button onClick={() => navigate('/messages')}
-                className="w-10 h-10 flex items-center justify-center text-gray-900 hover:text-brand-pink transition">
-                <MessageCircle size={22} strokeWidth={1.8} />
-              </button>
-            </div>
+            <button onClick={openComposer}
+              className="w-9 h-9 flex items-center justify-center text-gray-900 hover:text-brand-pink transition">
+              <Plus size={20} strokeWidth={1.8} />
+            </button>
+            <img src={logo} alt="The Fit Nurse Movement" className="h-[22px]" />
+            <button onClick={() => setSearchOpen(true)}
+              className="w-9 h-9 flex items-center justify-center text-gray-900 hover:text-brand-pink transition">
+              <Search size={20} strokeWidth={1.8} />
+            </button>
           </div>
         )}
       </header>

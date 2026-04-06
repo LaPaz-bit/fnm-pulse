@@ -39,17 +39,16 @@ export default function NotificationsPage() {
 
   return (
     <div>
-      <header className="sticky top-0 z-30 bg-white border-b border-gray-200 px-4 py-3 flex items-center gap-3">
-        <Bell size={17} className="text-brand-pink" />
-        <span className="font-display text-2xl font-black text-gradient italic">Notifications</span>
+      <header className="sticky top-0 z-30 bg-white border-b border-gray-200 px-4 py-3">
+        <h1 className="font-display text-2xl font-black text-gradient italic">Notifications</h1>
       </header>
 
       {loading ? (
         <div className="flex justify-center py-20"><Spinner size="lg" /></div>
       ) : notifications.length === 0 ? (
         <div className="flex flex-col items-center gap-4 py-20 text-center px-6 animate-fade-up">
-          <div className="w-16 h-16 rounded-full bg-brand-lightest flex items-center justify-center">
-            <Bell size={28} className="text-brand-soft" />
+          <div className="w-20 h-20 rounded-full bg-brand-gradient flex items-center justify-center shadow-glow">
+            <Bell size={32} className="text-white" />
           </div>
           <div>
             <p className="font-display font-black text-xl text-gray-900 italic mb-1">All caught up!</p>

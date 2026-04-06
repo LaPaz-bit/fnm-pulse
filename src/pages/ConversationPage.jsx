@@ -56,7 +56,9 @@ export default function ConversationPage() {
       .eq('recipient_id', user.id)
       .eq('sender_id', partnerId)
       .eq('is_read', false)
-      .then(() => {})
+      .then(({ error }) => {
+        if (error) console.error('Failed to mark messages as read:', error)
+      })
   }, [user, partnerId, messages.length])
 
   // Real-time
@@ -159,6 +161,7 @@ export default function ConversationPage() {
           onKeyDown={handleKeyDown}
           placeholder="Message…"
           rows={1}
+          maxLength={2000}
           className="flex-1 resize-none text-sm text-gray-900 placeholder:text-gray-400 border border-gray-200 rounded-2xl px-4 py-2.5 outline-none focus:ring-2 focus:ring-brand-light max-h-32"
         />
         <button

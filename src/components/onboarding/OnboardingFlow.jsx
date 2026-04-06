@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/context/AuthContext'
 import Button from '@/components/ui/Button'
+import logo from '@/assets/logo.png'
 import Input from '@/components/ui/Input'
 import Avatar from '@/components/ui/Avatar'
 import { Camera, ArrowRight, Sparkles } from 'lucide-react'
@@ -80,7 +81,7 @@ export default function OnboardingFlow() {
     <div className="min-h-screen bg-white flex flex-col max-w-lg mx-auto">
       {/* Header */}
       <div className="px-6 pt-12 pb-6">
-        <span className="text-3xl font-black text-brand-pink">FNM Pulse</span>
+        <img src={logo} alt="The Fit Nurse Movement" className="h-10" />
 
         {/* Progress dots */}
         <div className="flex gap-2 mt-6">

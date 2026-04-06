@@ -17,6 +17,7 @@ export default function AdminMembersTab() {
       .from('profiles')
       .select('id, display_name, username, avatar_url, role, created_at')
       .order('created_at', { ascending: false })
+      .limit(200)
       .then(({ data }) => {
         setMembers(data || [])
         setFiltered(data || [])

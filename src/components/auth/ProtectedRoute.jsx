@@ -1,6 +1,7 @@
 import { Navigate, useLocation } from 'react-router-dom'
 import { useAuth } from '@/context/AuthContext'
 import Spinner from '@/components/ui/Spinner'
+import logo from '@/assets/logo.png'
 
 export default function ProtectedRoute({ children, requireOnboarding = false }) {
   const { user, profile, loading } = useAuth()
@@ -10,7 +11,7 @@ export default function ProtectedRoute({ children, requireOnboarding = false }) 
     return (
       <div className="min-h-screen flex items-center justify-center bg-white">
         <div className="flex flex-col items-center gap-3">
-          <span className="text-2xl font-black text-brand-pink">FNM Pulse</span>
+          <img src={logo} alt="The Fit Nurse Movement" className="h-10" />
           <Spinner size="lg" />
         </div>
       </div>

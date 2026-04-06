@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/context/AuthContext'
@@ -23,7 +23,8 @@ export default function InboxPage() {
       })
   }, [user])
 
-  // Real-time: refresh conversation list on new DM
+  // Real-time: debounced refresh on new DM
+  const refreshTimer = useRef(null)
   useEffect(() => {
     if (!user) return
     const channel = supabase
@@ -33,13 +34,19 @@ export default function InboxPage() {
         { event: 'INSERT', schema: 'public', table: 'direct_messages' },
         (payload) => {
           if (payload.new.recipient_id !== user.id && payload.new.sender_id !== user.id) return
-          supabase
-            .rpc('get_conversations', { p_user_id: user.id })
-            .then(({ data }) => setConversations(data || []))
+          clearTimeout(refreshTimer.current)
+          refreshTimer.current = setTimeout(() => {
+            supabase
+              .rpc('get_conversations', { p_user_id: user.id })
+              .then(({ data }) => setConversations(data || []))
+          }, 500)
         },
       )
       .subscribe()
-    return () => supabase.removeChannel(channel)
+    return () => {
+      clearTimeout(refreshTimer.current)
+      supabase.removeChannel(channel)
+    }
   }, [user])
 
   return (

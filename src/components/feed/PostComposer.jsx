@@ -119,7 +119,10 @@ export default function PostComposer({ onClose, onCreated }) {
           post_id:    post.id,
           end_date:   goalEndDate || null,
         })
-        if (goalError) console.error('Goal creation error:', goalError)
+        if (goalError) {
+          console.error('Goal creation error:', goalError)
+          addToast({ emoji: '⚠️', message: 'Post created, but the goal could not be saved.', sub: 'Try creating the goal again.' })
+        }
       }
 
       // Check milestone badges
@@ -137,7 +140,7 @@ export default function PostComposer({ onClose, onCreated }) {
   const canPost = content.trim().length > 0 && (!isGoalProposal || goalTitle.trim().length > 0)
 
   return (
-    <div className="fixed inset-0 z-50 flex flex-col bg-white max-w-lg mx-auto">
+    <div className="fixed inset-0 bottom-[calc(52px+max(env(safe-area-inset-bottom),8px))] z-50 flex flex-col bg-white max-w-lg mx-auto">
       {/* Header */}
       <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100">
         <button

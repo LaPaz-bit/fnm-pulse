@@ -57,6 +57,9 @@ export default function PostCard({ post, onDeleted, onUpdated }) {
   async function deletePost() {
     if (!confirm('Delete this post?')) return
     setMenuOpen(false)
+    if (post.is_goal_proposal) {
+      await supabase.from('goals').delete().eq('post_id', post.id)
+    }
     await supabase.from('posts').delete().eq('id', post.id)
     onDeleted?.(post.id)
   }

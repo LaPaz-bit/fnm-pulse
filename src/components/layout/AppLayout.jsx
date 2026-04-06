@@ -1,11 +1,16 @@
-import { useState } from 'react'
-import { Outlet } from 'react-router-dom'
+import { useState, useEffect } from 'react'
+import { Outlet, useLocation } from 'react-router-dom'
 import BottomNav from './BottomNav'
 import PostComposer from '@/components/feed/PostComposer'
 
 export default function AppLayout() {
   const [composerOpen, setComposerOpen] = useState(false)
   const [refreshKey, setRefreshKey] = useState(0)
+  const location = useLocation()
+
+  useEffect(() => {
+    setComposerOpen(false)
+  }, [location.pathname])
 
   function handlePostCreated() {
     setComposerOpen(false)
@@ -18,7 +23,7 @@ export default function AppLayout() {
         <Outlet context={{ refreshKey, openComposer: () => setComposerOpen(true) }} />
       </main>
 
-      <BottomNav onPostPress={() => setComposerOpen(true)} />
+      <BottomNav />
 
       {composerOpen && (
         <PostComposer
