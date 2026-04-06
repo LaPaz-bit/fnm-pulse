@@ -10,7 +10,7 @@ export default function BottomNav() {
     <nav className="fixed bottom-0 left-0 right-0 max-w-lg mx-auto z-[60]">
       <div
         className="bg-white border-t border-gray-200 px-2 flex items-center justify-around"
-        style={{ paddingBottom: 'max(env(safe-area-inset-bottom), 8px)', paddingTop: '8px' }}
+        style={{ paddingBottom: 'max(env(safe-area-inset-bottom), 16px)', paddingTop: '12px' }}
       >
         <Tab to="/" icon={Home} />
         <Tab to="/goals" icon={Target} />

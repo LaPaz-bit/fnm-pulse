@@ -142,9 +142,9 @@ export default function ConversationPage() {
   }
 
   return (
-    <div className="flex flex-col h-screen">
+    <div className="flex flex-col h-[100dvh]">
       {/* Header */}
-      <header className="sticky top-0 z-30 bg-white border-b border-gray-200 px-4 py-3 flex items-center gap-3">
+      <header className="shrink-0 bg-white border-b border-gray-200 px-4 py-3 flex items-center gap-3 z-30">
         <button
           onClick={() => navigate('/messages')}
           className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-100 text-gray-500 transition"
@@ -181,7 +181,7 @@ export default function ConversationPage() {
       </div>
 
       {/* Input */}
-      <div className="sticky bottom-0 bg-white border-t border-gray-100 px-4 py-3 flex items-end gap-2">
+      <div className="shrink-0 bg-white border-t border-gray-100 px-4 py-3 flex items-end gap-2">
         <textarea
           value={text}
           onChange={(e) => setText(e.target.value)}
@@ -189,7 +189,7 @@ export default function ConversationPage() {
           placeholder="Message…"
           rows={1}
           maxLength={2000}
-          className="flex-1 resize-none text-sm text-gray-900 placeholder:text-gray-400 border border-gray-200 rounded-2xl px-4 py-2.5 outline-none focus:ring-2 focus:ring-brand-light max-h-32"
+          className="flex-1 resize-none text-base text-gray-900 placeholder:text-gray-400 border border-gray-200 rounded-2xl px-4 py-2.5 outline-none focus:ring-2 focus:ring-brand-light max-h-32"
         />
         <button
           onClick={send}
