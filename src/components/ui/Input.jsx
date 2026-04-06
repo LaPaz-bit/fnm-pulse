@@ -5,7 +5,7 @@ const Input = forwardRef(function Input(
   ref
 ) {
   const base = [
-    'w-full rounded-2xl border bg-white px-4 py-3 text-sm text-gray-900',
+    'w-full rounded-2xl border bg-white px-4 py-3 text-base text-gray-900',
     'placeholder:text-gray-300 outline-none transition-all duration-200',
     'focus:border-brand-pink focus:ring-2 focus:ring-brand-light',
     'hover:border-gray-300',
