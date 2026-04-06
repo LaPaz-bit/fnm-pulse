@@ -17,6 +17,7 @@ import LeaderboardPage from '@/pages/LeaderboardPage'
 import NotificationsPage from '@/pages/NotificationsPage'
 import InboxPage from '@/pages/InboxPage'
 import ConversationPage from '@/pages/ConversationPage'
+import EditProfilePage from '@/pages/EditProfilePage'
 import AdminPage from '@/pages/AdminPage'
 import CommunityGuidelinesPage from '@/pages/CommunityGuidelinesPage'
 
@@ -62,6 +63,7 @@ function AppRoutes() {
         <Route path="/challenges/:challengeId" element={<GoalThreadPage />} />
         <Route path="/wins" element={<WinsWallPage />} />
         <Route path="/profile" element={<ProfilePage />} />
+        <Route path="/profile/edit" element={<EditProfilePage />} />
         <Route path="/profile/:userId" element={<ProfilePage />} />
         <Route path="/leaderboard" element={<LeaderboardPage />} />
         <Route path="/notifications" element={<NotificationsPage />} />

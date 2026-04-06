@@ -29,6 +29,12 @@ export default function BottomNav() {
       ])
       setUnreadDMs(dmCount || 0)
       setUnreadNotifs(notifCount || 0)
+
+      // Update PWA app icon badge
+      const total = (dmCount || 0) + (notifCount || 0)
+      if ('setAppBadge' in navigator) {
+        total > 0 ? navigator.setAppBadge(total) : navigator.clearAppBadge()
+      }
     }
     fetchCounts()
 

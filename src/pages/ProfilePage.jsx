@@ -7,7 +7,7 @@ import Button from '@/components/ui/Button'
 import Spinner from '@/components/ui/Spinner'
 import PostCard from '@/components/feed/PostCard'
 import BadgeDisplay from '@/components/profile/BadgeDisplay'
-import EditProfileModal from '@/components/profile/EditProfileModal'
+
 import { usePushNotifications } from '@/hooks/usePushNotifications'
 import { ArrowLeft, Plus, Pencil, Trophy, MessageCircle, Trash2, LogOut, Bell, BellOff, ShieldCheck, Grid3X3, MoreHorizontal } from 'lucide-react'
 
@@ -35,7 +35,6 @@ export default function ProfilePage() {
   const [posts, setPosts] = useState([])
   const [loadingProfile, setLoadingProfile] = useState(!isOwn)
   const [loadingPosts, setLoadingPosts] = useState(true)
-  const [editOpen, setEditOpen] = useState(false)
   const [gridView, setGridView] = useState(true)
   const [menuOpen, setMenuOpen] = useState(false)
   const push = usePushNotifications()
@@ -216,7 +215,7 @@ export default function ProfilePage() {
         <div className="flex gap-2 mt-3.5">
           {isOwn ? (
             <button
-              onClick={() => setEditOpen(true)}
+              onClick={() => navigate('/profile/edit')}
               className="flex-1 py-2 text-sm font-semibold text-gray-900 bg-gray-100 hover:bg-gray-200 rounded-xl transition-colors"
             >
               Edit profile
@@ -321,12 +320,6 @@ export default function ProfilePage() {
         </div>
       )}
 
-      {editOpen && (
-        <EditProfileModal
-          onClose={() => setEditOpen(false)}
-          onSaved={() => { refreshProfile(); setEditOpen(false) }}
-        />
-      )}
     </div>
   )
 }
