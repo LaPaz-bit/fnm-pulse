@@ -1,10 +1,10 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/context/AuthContext'
 import Spinner from '@/components/ui/Spinner'
 import Avatar from '@/components/ui/Avatar'
-import { Bell, MessageCircle } from 'lucide-react'
+import { Bell, MessageCircle, Trash2 } from 'lucide-react'
 import { formatRelativeTime } from '@/utils/formatDate'
 import { BADGE_META } from '@/utils/badges'
 
@@ -56,6 +56,11 @@ export default function NotificationsPage() {
       .eq('is_read', false)
   }
 
+  async function deleteNotification(id) {
+    setNotifications((prev) => prev.filter((n) => n.id !== id))
+    await supabase.from('notifications').delete().eq('id', id)
+  }
+
   return (
     <div>
       <header className="sticky top-0 z-30 bg-white border-b border-gray-200 px-4 py-3">
@@ -77,7 +82,9 @@ export default function NotificationsPage() {
       ) : (
         <div className="px-3 py-3 flex flex-col gap-2">
           {notifications.map(n => (
-            <NotificationItem key={n.id} notification={n} />
+            <SwipeToDelete key={n.id} onDelete={() => deleteNotification(n.id)}>
+              <NotificationItem notification={n} />
+            </SwipeToDelete>
           ))}
         </div>
       )}
@@ -145,6 +152,77 @@ function NotificationItem({ notification: n }) {
       <div className="flex-1 min-w-0">
         <p className="text-sm text-gray-700">{n.type}</p>
         <p className="text-xs text-gray-400">{formatRelativeTime(n.created_at)}</p>
+      </div>
+    </div>
+  )
+}
+
+const SWIPE_THRESHOLD = 80
+const DELETE_THRESHOLD = 140
+
+function SwipeToDelete({ children, onDelete }) {
+  const containerRef = useRef(null)
+  const startX = useRef(0)
+  const currentX = useRef(0)
+  const swiping = useRef(false)
+
+  const onTouchStart = useCallback((e) => {
+    startX.current = e.touches[0].clientX
+    currentX.current = 0
+    swiping.current = false
+  }, [])
+
+  const onTouchMove = useCallback((e) => {
+    const diff = startX.current - e.touches[0].clientX
+    // Only allow swiping left (positive diff)
+    if (diff < 0) {
+      currentX.current = 0
+      if (containerRef.current) containerRef.current.style.transform = ''
+      return
+    }
+    if (diff > 10) swiping.current = true
+    currentX.current = Math.min(diff, DELETE_THRESHOLD + 20)
+    if (containerRef.current) {
+      containerRef.current.style.transform = `translateX(-${currentX.current}px)`
+      containerRef.current.style.transition = 'none'
+    }
+  }, [])
+
+  const onTouchEnd = useCallback(() => {
+    if (!containerRef.current) return
+    containerRef.current.style.transition = 'transform 0.25s ease'
+
+    if (currentX.current >= DELETE_THRESHOLD) {
+      containerRef.current.style.transform = 'translateX(-100%)'
+      containerRef.current.style.opacity = '0'
+      containerRef.current.style.transition = 'transform 0.25s ease, opacity 0.25s ease'
+      setTimeout(onDelete, 250)
+    } else {
+      containerRef.current.style.transform = 'translateX(0)'
+    }
+    swiping.current = false
+  }, [onDelete])
+
+  const onClick = useCallback((e) => {
+    if (swiping.current) e.stopPropagation()
+  }, [])
+
+  return (
+    <div className="relative overflow-hidden rounded-3xl">
+      {/* Delete background */}
+      <div className="absolute inset-0 bg-red-500 flex items-center justify-end pr-6 rounded-3xl">
+        <Trash2 size={20} className="text-white" />
+      </div>
+      {/* Swipeable content */}
+      <div
+        ref={containerRef}
+        onTouchStart={onTouchStart}
+        onTouchMove={onTouchMove}
+        onTouchEnd={onTouchEnd}
+        onClickCapture={onClick}
+        className="relative z-10"
+      >
+        {children}
       </div>
     </div>
   )
