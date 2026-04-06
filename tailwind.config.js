@@ -15,7 +15,7 @@ export default {
           dark:     '#C4248E',
           deeper:   '#9E1B70',
         },
-        canvas: '#FFFBFD',
+        canvas: '#FFFFFF',
       },
       fontFamily: {
         sans:    ['"Plus Jakarta Sans"', 'ui-sans-serif', 'system-ui', 'sans-serif'],
