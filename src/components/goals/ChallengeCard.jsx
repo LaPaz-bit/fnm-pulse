@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { motion } from 'framer-motion'
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/context/AuthContext'
 import Avatar from '@/components/ui/Avatar'
@@ -41,10 +42,13 @@ export default function ChallengeCard({ challenge, isArchived = false }) {
   }
 
   return (
-    <div
+    <motion.div
       onClick={() => navigate(`/challenges/${challenge.id}`)}
-      className="relative overflow-hidden rounded-3xl p-4 cursor-pointer transition-all duration-200 active:scale-[0.99] hover:brightness-105"
+      className="relative overflow-hidden rounded-3xl p-4 cursor-pointer"
       style={{ background: 'linear-gradient(135deg, #FA5EBD 0%, #C4248E 100%)' }}
+      whileHover={{ scale: 1.02 }}
+      whileTap={{ scale: 0.98 }}
+      transition={{ type: 'spring', stiffness: 400, damping: 28 }}
     >
       {/* Decorative circles */}
       <div className="absolute -top-5 -right-5 w-28 h-28 rounded-full bg-white/10 pointer-events-none" />
@@ -104,13 +108,16 @@ export default function ChallengeCard({ challenge, isArchived = false }) {
               <Check size={11} /> Joined
             </span>
           ) : (
-            <button onClick={join} disabled={joining}
-              className="flex items-center gap-1 text-xs font-bold text-brand-pink bg-white px-3.5 py-1.5 rounded-full hover:bg-brand-light active:scale-95 transition-all shadow-sm">
+            <motion.button onClick={join} disabled={joining}
+              className="flex items-center gap-1 text-xs font-bold text-brand-pink bg-white px-3.5 py-1.5 rounded-full hover:bg-brand-light transition-colors shadow-sm"
+              whileTap={{ scale: 1.15 }}
+              transition={{ type: 'spring', stiffness: 500, damping: 15 }}
+            >
               {joining ? '…' : <>I&apos;m in! <ArrowRight size={11} /></>}
-            </button>
+            </motion.button>
           )}
         </div>
       </div>
-    </div>
+    </motion.div>
   )
 }

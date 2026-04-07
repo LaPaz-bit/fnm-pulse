@@ -1,9 +1,11 @@
 import { useState, useEffect } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/context/AuthContext'
 import GoalCard from '@/components/goals/GoalCard'
 import ChallengeCard from '@/components/goals/ChallengeCard'
 import Spinner from '@/components/ui/Spinner'
+import { StaggerList, StaggerItem } from '@/components/ui/Motion'
 import { Target, Zap, ChevronDown, ChevronUp } from 'lucide-react'
 
 const GOAL_SELECT = `
@@ -68,7 +70,11 @@ export default function GoalsPage() {
           >
             {activeChallenges.length === 0 ? (
               <EmptySection emoji="⚡" message="No active challenges right now. Check back soon!" />
-            ) : activeChallenges.map(c => <ChallengeCard key={c.id} challenge={c} />)}
+            ) : (
+              <StaggerList>
+                {activeChallenges.map(c => <StaggerItem key={c.id}><ChallengeCard challenge={c} /></StaggerItem>)}
+              </StaggerList>
+            )}
           </Section>
 
           {/* Member Goals */}
@@ -80,7 +86,11 @@ export default function GoalsPage() {
           >
             {myActiveGoals.length === 0 ? (
               <EmptySection emoji="🎯" message="You haven't joined any goals yet. Join a goal from the feed to see it here!" />
-            ) : myActiveGoals.map(g => <GoalCard key={g.id} goal={g} />)}
+            ) : (
+              <StaggerList>
+                {myActiveGoals.map(g => <StaggerItem key={g.id}><GoalCard goal={g} /></StaggerItem>)}
+              </StaggerList>
+            )}
           </Section>
 
           {/* Archived */}
@@ -90,15 +100,27 @@ export default function GoalsPage() {
                 onClick={() => setArchivedOpen(v => !v)}
                 className="flex items-center gap-2 w-full text-left py-2 text-xs font-bold text-gray-400 hover:text-gray-600 uppercase tracking-wider transition-colors"
               >
-                {archivedOpen ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
+                <motion.span animate={{ rotate: archivedOpen ? 180 : 0 }} transition={{ duration: 0.2 }}>
+                  <ChevronDown size={14} />
+                </motion.span>
                 Archived ({myArchivedGoals.length + archivedChallenges.length})
               </button>
-              {archivedOpen && (
-                <div className="flex flex-col gap-3 mt-2 animate-fade-up">
-                  {archivedChallenges.map(c => <ChallengeCard key={c.id} challenge={c} isArchived />)}
-                  {myArchivedGoals.map(g => <GoalCard key={g.id} goal={g} isArchived />)}
-                </div>
-              )}
+              <AnimatePresence>
+                {archivedOpen && (
+                  <motion.div
+                    initial={{ height: 0, opacity: 0 }}
+                    animate={{ height: 'auto', opacity: 1 }}
+                    exit={{ height: 0, opacity: 0 }}
+                    transition={{ duration: 0.3, ease: 'easeInOut' }}
+                    className="overflow-hidden"
+                  >
+                    <div className="flex flex-col gap-3 mt-2">
+                      {archivedChallenges.map(c => <ChallengeCard key={c.id} challenge={c} isArchived />)}
+                      {myArchivedGoals.map(g => <GoalCard key={g.id} goal={g} isArchived />)}
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </div>
           )}
         </div>

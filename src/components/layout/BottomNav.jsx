@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { NavLink } from 'react-router-dom'
+import { motion } from 'framer-motion'
 import { Home, Target, Search, MessageCircle } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/context/AuthContext'
@@ -71,19 +72,28 @@ export default function BottomNav() {
         <NavLink
           to="/profile"
           className={({ isActive }) =>
-            `flex items-center justify-center w-11 h-11 rounded-xl transition-all duration-150 ${
+            `relative flex flex-col items-center justify-center w-11 h-11 rounded-xl transition-all duration-150 ${
               isActive ? 'opacity-100' : 'opacity-50'
             }`
           }
         >
           {({ isActive }) => (
-            <div className={`rounded-full overflow-hidden ${isActive ? 'ring-2 ring-brand-pink ring-offset-1' : ''}`}>
-              <Avatar
-                src={profile?.avatar_url}
-                name={profile?.display_name}
-                size="sm"
-              />
-            </div>
+            <>
+              <div className={`rounded-full overflow-hidden ${isActive ? 'ring-2 ring-brand-pink ring-offset-1' : ''}`}>
+                <Avatar
+                  src={profile?.avatar_url}
+                  name={profile?.display_name}
+                  size="sm"
+                />
+              </div>
+              {isActive && (
+                <motion.span
+                  layoutId="nav-indicator"
+                  className="absolute bottom-0.5 w-1 h-1 rounded-full bg-brand-pink"
+                  transition={{ type: 'spring', stiffness: 500, damping: 35 }}
+                />
+              )}
+            </>
           )}
         </NavLink>
       </div>
@@ -97,7 +107,7 @@ function Tab({ to, icon: Icon, forceInactive, badge = 0 }) {
       to={to}
       end={to === '/'}
       className={({ isActive }) =>
-        `relative flex items-center justify-center w-11 h-11 rounded-xl transition-all duration-150 ${
+        `relative flex flex-col items-center justify-center w-11 h-11 rounded-xl transition-all duration-150 ${
           isActive && !forceInactive ? 'text-gray-900' : 'text-gray-400'
         }`
       }
@@ -105,6 +115,13 @@ function Tab({ to, icon: Icon, forceInactive, badge = 0 }) {
       {({ isActive }) => (
         <>
           <Icon size={24} strokeWidth={isActive && !forceInactive ? 2.5 : 1.8} />
+          {isActive && !forceInactive && (
+            <motion.span
+              layoutId="nav-indicator"
+              className="absolute bottom-0.5 w-1 h-1 rounded-full bg-brand-pink"
+              transition={{ type: 'spring', stiffness: 500, damping: 35 }}
+            />
+          )}
           {badge > 0 && (
             <span className="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] flex items-center justify-center bg-red-500 text-white text-[10px] font-bold rounded-full px-1 leading-none">
               {badge > 99 ? '99+' : badge}

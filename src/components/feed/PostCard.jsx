@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { motion, AnimatePresence } from 'framer-motion'
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/context/AuthContext'
 import Avatar from '@/components/ui/Avatar'
@@ -129,14 +130,16 @@ export default function PostCard({ post, onDeleted, onUpdated }) {
           >
             <MoreHorizontal size={20} />
           </button>
-          {menuOpen && (
-            <PostMenu
-              isOwn={isOwn} isAdmin={isAdmin} isPinned={post.is_pinned}
-              onEdit={() => { setEditing(true); setMenuOpen(false) }}
-              onDelete={deletePost} onReport={reportPost} onPin={togglePin}
-              onClose={() => setMenuOpen(false)}
-            />
-          )}
+          <AnimatePresence>
+            {menuOpen && (
+              <PostMenu
+                isOwn={isOwn} isAdmin={isAdmin} isPinned={post.is_pinned}
+                onEdit={() => { setEditing(true); setMenuOpen(false) }}
+                onDelete={deletePost} onReport={reportPost} onPin={togglePin}
+                onClose={() => setMenuOpen(false)}
+              />
+            )}
+          </AnimatePresence>
         </div>
       </div>
 
@@ -243,13 +246,15 @@ export default function PostCard({ post, onDeleted, onUpdated }) {
 
         {/* Encourage (others only) */}
         {!isOwn && (
-          <button
+          <motion.button
             onClick={() => setEncourageOpen(true)}
             className="flex items-center gap-1.5 text-gray-800 hover:text-brand-pink transition-colors"
+            whileTap={{ scale: 1.25 }}
+            transition={{ type: 'spring', stiffness: 500, damping: 15 }}
           >
             <Sparkles size={22} strokeWidth={1.8} />
             {encourageCount > 0 && <span className="text-sm font-semibold">{encourageCount}</span>}
-          </button>
+          </motion.button>
         )}
 
         {/* Win badge */}
@@ -284,11 +289,19 @@ export default function PostCard({ post, onDeleted, onUpdated }) {
         </button>
       )}
 
-      {commentsOpen && (
-        <div className="px-3 pb-2">
-          <CommentSection postId={post.id} authorId={post.author_id} />
-        </div>
-      )}
+      <AnimatePresence>
+        {commentsOpen && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: 'auto', opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.25, ease: 'easeInOut' }}
+            className="overflow-hidden px-3 pb-2"
+          >
+            <CommentSection postId={post.id} authorId={post.author_id} />
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* ── Timestamp ── */}
       <p className="px-3 pb-3 text-[11px] text-gray-400 uppercase tracking-wide">
@@ -317,7 +330,13 @@ function PostMenu({ isOwn, isAdmin, isPinned, onEdit, onDelete, onReport, onPin,
   return (
     <>
       <div className="fixed inset-0 z-10" onClick={onClose} />
-      <div className="absolute right-0 top-8 z-20 bg-white border border-gray-100 rounded-2xl shadow-lg py-1 min-w-40 overflow-hidden animate-scale-in">
+      <motion.div
+        className="absolute right-0 top-8 z-20 bg-white border border-gray-100 rounded-2xl shadow-lg py-1 min-w-40 overflow-hidden"
+        initial={{ scale: 0.88, opacity: 0, y: -4 }}
+        animate={{ scale: 1, opacity: 1, y: 0 }}
+        exit={{ scale: 0.88, opacity: 0, y: -4 }}
+        transition={{ type: 'spring', stiffness: 400, damping: 28 }}
+      >
         {isAdmin && (
           <MenuItem icon={<Pin size={14} />} label={isPinned ? 'Unpin' : 'Pin'} onClick={onPin} />
         )}
@@ -329,7 +348,7 @@ function PostMenu({ isOwn, isAdmin, isPinned, onEdit, onDelete, onReport, onPin,
         ) : (
           <MenuItem icon={<Flag size={14} />} label="Report" onClick={onReport} danger />
         )}
-      </div>
+      </motion.div>
     </>
   )
 }

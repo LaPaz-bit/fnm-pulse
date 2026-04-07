@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { motion } from 'framer-motion'
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/context/AuthContext'
 import { sendPushNotification } from '@/utils/pushNotifications'
@@ -45,13 +46,17 @@ export default function ReactionBar({ postId, authorId, initialReactions = [] })
 
   return (
     <div className="flex items-center gap-1 flex-wrap">
-      {groups.map(({ emoji, count, reacted }) => (
-        <button
+      {groups.map(({ emoji, count, reacted }, i) => (
+        <motion.button
           key={emoji}
           onClick={() => toggle(emoji)}
+          initial={{ scale: 0, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          transition={{ type: 'spring', stiffness: 500, damping: 25, delay: i * 0.04 }}
+          whileTap={{ scale: 0.85 }}
           className={[
             'flex items-center gap-1 px-2.5 py-1 rounded-full text-sm font-medium',
-            'transition-all duration-150 active:scale-90 select-none',
+            'transition-colors duration-150 select-none',
             reacted
               ? 'bg-brand-light text-brand-dark ring-1 ring-brand-soft/60 shadow-sm'
               : count > 0
@@ -63,7 +68,7 @@ export default function ReactionBar({ postId, authorId, initialReactions = [] })
         >
           <span className={reacted ? 'scale-110 inline-block' : 'inline-block'}>{emoji}</span>
           {count > 0 && <span className="text-xs tabular-nums">{count}</span>}
-        </button>
+        </motion.button>
       ))}
     </div>
   )

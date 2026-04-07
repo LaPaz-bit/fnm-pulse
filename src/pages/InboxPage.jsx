@@ -4,6 +4,7 @@ import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/context/AuthContext'
 import Avatar from '@/components/ui/Avatar'
 import Spinner from '@/components/ui/Spinner'
+import { FadeIn } from '@/components/ui/Motion'
 import { formatRelativeTime } from '@/utils/formatDate'
 import { MessageCircle } from 'lucide-react'
 
@@ -98,7 +99,7 @@ export default function InboxPage() {
 
 function EmptyInbox() {
   return (
-    <div className="flex flex-col items-center gap-5 py-20 px-8 text-center animate-fade-up">
+    <FadeIn className="flex flex-col items-center gap-5 py-20 px-8 text-center">
       <div className="w-20 h-20 rounded-full bg-brand-gradient flex items-center justify-center shadow-glow">
         <MessageCircle size={32} className="text-white" />
       </div>
@@ -108,6 +109,6 @@ function EmptyInbox() {
           Visit a member&apos;s profile to start a conversation.
         </p>
       </div>
-    </div>
+    </FadeIn>
   )
 }

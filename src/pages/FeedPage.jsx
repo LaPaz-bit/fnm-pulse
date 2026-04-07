@@ -1,11 +1,13 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useOutletContext, NavLink } from 'react-router-dom'
+import { motion } from 'framer-motion'
 import logo from '@/assets/logo.png'
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/context/AuthContext'
 import PostCard from '@/components/feed/PostCard'
 import Spinner from '@/components/ui/Spinner'
 import Button from '@/components/ui/Button'
+import { StaggerList, StaggerItem, FadeIn } from '@/components/ui/Motion'
 import { Plus, Bell } from 'lucide-react'
 
 const PAGE_SIZE = 20
@@ -95,10 +97,15 @@ export default function FeedPage() {
       {/* Header */}
       <header className="sticky top-0 z-30 bg-white border-b border-gray-200 px-4 py-3">
         <div className="flex items-center justify-between">
-          <button onClick={openComposer}
-            className="w-9 h-9 flex items-center justify-center text-gray-900 hover:text-brand-pink transition">
+          <motion.button
+            onClick={openComposer}
+            className="w-9 h-9 flex items-center justify-center text-gray-900 hover:text-brand-pink transition"
+            animate={{ scale: [1, 1.06, 1] }}
+            transition={{ repeat: Infinity, duration: 3, ease: 'easeInOut' }}
+            whileTap={{ scale: 0.9 }}
+          >
             <Plus size={20} strokeWidth={1.8} />
-          </button>
+          </motion.button>
           <img src={logo} alt="The Fit Nurse Movement" className="h-[22px]" />
           <NavLink to="/notifications"
             className="relative w-9 h-9 flex items-center justify-center text-gray-900 hover:text-brand-pink transition">
@@ -123,9 +130,13 @@ export default function FeedPage() {
         <EmptyFeed onPost={openComposer} />
       ) : (
         <div className="pt-2 pb-4">
-          {posts.map(post => (
-            <PostCard key={post.id} post={post} onDeleted={handleDeleted} onUpdated={handleUpdated} />
-          ))}
+          <StaggerList>
+            {posts.map(post => (
+              <StaggerItem key={post.id}>
+                <PostCard post={post} onDeleted={handleDeleted} onUpdated={handleUpdated} />
+              </StaggerItem>
+            ))}
+          </StaggerList>
           {hasMore && (
             <div className="flex justify-center py-6">
               <Button variant="ghost" size="sm" loading={loadingMore} onClick={() => fetchPosts(false)}>
@@ -146,7 +157,7 @@ export default function FeedPage() {
 
 function EmptyFeed({ onPost }) {
   return (
-    <div className="flex flex-col items-center gap-5 py-20 px-8 text-center animate-fade-up">
+    <FadeIn className="flex flex-col items-center gap-5 py-20 px-8 text-center">
       <div className="w-20 h-20 rounded-full bg-brand-gradient flex items-center justify-center text-3xl shadow-glow">
         💪
       </div>
@@ -157,6 +168,6 @@ function EmptyFeed({ onPost }) {
         </p>
       </div>
       <Button onClick={onPost} size="lg">Make the First Post 🔥</Button>
-    </div>
+    </FadeIn>
   )
 }

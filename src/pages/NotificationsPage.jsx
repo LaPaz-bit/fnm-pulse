@@ -1,9 +1,11 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { motion } from 'framer-motion'
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/context/AuthContext'
 import Spinner from '@/components/ui/Spinner'
 import Avatar from '@/components/ui/Avatar'
+import { FadeIn } from '@/components/ui/Motion'
 import { Bell, MessageCircle, Trash2 } from 'lucide-react'
 import { formatRelativeTime } from '@/utils/formatDate'
 import { BADGE_META } from '@/utils/badges'
@@ -70,7 +72,7 @@ export default function NotificationsPage() {
       {loading ? (
         <div className="flex justify-center py-20"><Spinner size="lg" /></div>
       ) : notifications.length === 0 ? (
-        <div className="flex flex-col items-center gap-4 py-20 text-center px-6 animate-fade-up">
+        <FadeIn className="flex flex-col items-center gap-4 py-20 text-center px-6">
           <div className="w-20 h-20 rounded-full bg-brand-gradient flex items-center justify-center shadow-glow">
             <Bell size={32} className="text-white" />
           </div>
@@ -78,7 +80,7 @@ export default function NotificationsPage() {
             <p className="font-display font-black text-xl text-gray-900 italic mb-1">All caught up!</p>
             <p className="text-sm text-gray-400">Badges, reactions, and activity will appear here.</p>
           </div>
-        </div>
+        </FadeIn>
       ) : (
         <div className="px-3 py-3 flex flex-col gap-2">
           {notifications.map(n => (
@@ -126,8 +128,21 @@ function NotificationItem({ notification: n }) {
         'flex items-center gap-3 rounded-3xl p-3.5',
         !n.is_read ? 'bg-brand-lightest' : 'bg-white shadow-card',
       ].join(' ')}>
-        <div className="w-11 h-11 rounded-2xl bg-brand-gradient flex items-center justify-center text-xl shrink-0 shadow-sm">
-          {meta.emoji}
+        <div className="relative shrink-0">
+          <motion.div
+            className="w-11 h-11 rounded-2xl bg-brand-gradient flex items-center justify-center text-xl shadow-sm"
+            initial={{ scale: 0 }}
+            animate={{ scale: 1 }}
+            transition={{ type: 'spring', stiffness: 200, damping: 12 }}
+          >
+            {meta.emoji}
+          </motion.div>
+          <motion.span
+            className="absolute inset-0 rounded-2xl border-2 border-brand-pink"
+            initial={{ scale: 0.5, opacity: 1 }}
+            animate={{ scale: 2.2, opacity: 0 }}
+            transition={{ duration: 0.7, ease: 'easeOut' }}
+          />
         </div>
         <div className="flex-1 min-w-0">
           <p className="text-sm font-bold text-gray-900 leading-tight">

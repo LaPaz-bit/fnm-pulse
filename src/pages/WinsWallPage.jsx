@@ -1,9 +1,11 @@
 import { useState, useEffect, useCallback } from 'react'
 import { supabase } from '@/lib/supabase'
 import { useOutletContext } from 'react-router-dom'
+import { motion } from 'framer-motion'
 import PostCard from '@/components/feed/PostCard'
 import Spinner from '@/components/ui/Spinner'
 import Button from '@/components/ui/Button'
+import { StaggerList, StaggerItem, FadeIn } from '@/components/ui/Motion'
 import { Trophy } from 'lucide-react'
 
 const PAGE_SIZE = 20
@@ -61,18 +63,48 @@ export default function WinsWallPage() {
         <div className="relative flex items-end justify-between">
           <div>
             <div className="flex items-center gap-2 mb-1">
-              <Trophy size={20} className="text-white" strokeWidth={2.5} />
-              <span className="text-xs font-bold text-white/70 uppercase tracking-widest">Wall of Fame</span>
+              <motion.div
+                initial={{ scale: 0 }}
+                animate={{ scale: 1 }}
+                transition={{ type: 'spring', stiffness: 300, damping: 20, delay: 0.1 }}
+              >
+                <Trophy size={20} className="text-white" strokeWidth={2.5} />
+              </motion.div>
+              <motion.span
+                className="text-xs font-bold text-white/70 uppercase tracking-widest"
+                initial={{ opacity: 0, x: -8 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.3, delay: 0.2 }}
+              >
+                Wall of Fame
+              </motion.span>
             </div>
-            <h1 className="font-display text-4xl font-black text-white italic leading-none">
+            <motion.h1
+              className="font-display text-4xl font-black text-white italic leading-none"
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.4, ease: 'easeOut', delay: 0.15 }}
+            >
               Wins Wall
-            </h1>
+            </motion.h1>
           </div>
-          <div className="text-4xl mb-1">🎉</div>
+          <motion.div
+            className="text-4xl mb-1"
+            initial={{ scale: 0, rotate: -20 }}
+            animate={{ scale: 1, rotate: 0 }}
+            transition={{ type: 'spring', stiffness: 300, damping: 18, delay: 0.25 }}
+          >
+            🎉
+          </motion.div>
         </div>
-        <p className="relative text-sm text-white/70 font-medium mt-2.5">
+        <motion.p
+          className="relative text-sm text-white/70 font-medium mt-2.5"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.4, delay: 0.35 }}
+        >
           Every win counts. Big or small — celebrate them all.
-        </p>
+        </motion.p>
       </header>
 
       {/* Gradient fade edge */}
@@ -89,9 +121,13 @@ export default function WinsWallPage() {
         <EmptyWins onPost={openComposer} />
       ) : (
         <div className="pt-2 pb-4">
-          {posts.map(post => (
-            <PostCard key={post.id} post={post} onDeleted={handleDeleted} onUpdated={handleUpdated} />
-          ))}
+          <StaggerList>
+            {posts.map(post => (
+              <StaggerItem key={post.id}>
+                <PostCard post={post} onDeleted={handleDeleted} onUpdated={handleUpdated} />
+              </StaggerItem>
+            ))}
+          </StaggerList>
           {hasMore && (
             <div className="flex justify-center py-6">
               <Button variant="ghost" size="sm" loading={loadingMore} onClick={() => fetchPosts(false)}>
@@ -100,9 +136,15 @@ export default function WinsWallPage() {
             </div>
           )}
           {!hasMore && posts.length > 0 && (
-            <p className="text-center text-xs text-gray-300 py-8 font-medium">
+            <motion.p
+              className="text-center text-xs text-gray-300 py-8 font-medium"
+              initial={{ opacity: 0, y: 8 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.5, ease: 'easeOut' }}
+            >
               Every single one of these is a W. 🏆
-            </p>
+            </motion.p>
           )}
         </div>
       )}
@@ -112,7 +154,7 @@ export default function WinsWallPage() {
 
 function EmptyWins({ onPost }) {
   return (
-    <div className="flex flex-col items-center gap-5 py-20 px-8 text-center animate-fade-up">
+    <FadeIn className="flex flex-col items-center gap-5 py-20 px-8 text-center">
       <div className="w-20 h-20 rounded-full bg-brand-gradient flex items-center justify-center text-3xl shadow-glow">
         🏆
       </div>
@@ -123,6 +165,6 @@ function EmptyWins({ onPost }) {
         </p>
       </div>
       <Button onClick={onPost} size="lg">Share Your Win 🎉</Button>
-    </div>
+    </FadeIn>
   )
 }

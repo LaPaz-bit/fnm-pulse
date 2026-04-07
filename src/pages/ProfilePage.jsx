@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useParams, useNavigate, useOutletContext } from 'react-router-dom'
+import { motion, AnimatePresence } from 'framer-motion'
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/context/AuthContext'
 import Avatar from '@/components/ui/Avatar'
@@ -7,6 +8,8 @@ import Button from '@/components/ui/Button'
 import Spinner from '@/components/ui/Spinner'
 import PostCard from '@/components/feed/PostCard'
 import BadgeDisplay from '@/components/profile/BadgeDisplay'
+import { StaggerList, StaggerItem, SpringScale } from '@/components/ui/Motion'
+import { useCountUp } from '@/hooks/useCountUp'
 
 import { usePushNotifications } from '@/hooks/usePushNotifications'
 import { ArrowLeft, Plus, Pencil, Trophy, MessageCircle, Trash2, LogOut, Bell, BellOff, ShieldCheck, Grid3X3, MoreHorizontal } from 'lucide-react'
@@ -190,12 +193,19 @@ export default function ProfilePage() {
       <div className="px-4 pt-5 pb-4">
         {/* Avatar + stats row */}
         <div className="flex items-center gap-6 mb-4">
-          <Avatar
-            src={profile.avatar_url}
-            name={profile.display_name}
-            size="xl"
-            className="ring-2 ring-gray-100 shrink-0"
-          />
+          <motion.div
+            initial={{ scale: 0.8, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            transition={{ type: 'spring', stiffness: 400, damping: 28 }}
+            className="shrink-0"
+          >
+            <Avatar
+              src={profile.avatar_url}
+              name={profile.display_name}
+              size="xl"
+              className="ring-2 ring-gray-100"
+            />
+          </motion.div>
           <div className="flex-1 flex justify-around">
             <StatCell value={stats?.post_count ?? 0} label="Posts" />
             <StatCell value={stats?.badges_earned ?? 0} label="Badges" />
@@ -242,59 +252,87 @@ export default function ProfilePage() {
       <div className="border-t border-gray-200 flex">
         <button
           onClick={() => setGridView(true)}
-          className={`flex-1 flex items-center justify-center gap-1.5 py-3 text-xs font-semibold border-t-2 transition-colors ${
-            gridView ? 'border-gray-900 text-gray-900' : 'border-transparent text-gray-400'
+          className={`relative flex-1 flex items-center justify-center gap-1.5 py-3 text-xs font-semibold transition-colors ${
+            gridView ? 'text-gray-900' : 'text-gray-400'
           }`}
         >
           <Grid3X3 size={14} /> Grid
+          {gridView && (
+            <motion.span
+              layoutId="profile-tab-indicator"
+              className="absolute top-0 left-0 right-0 h-0.5 bg-gray-900 rounded-full"
+              transition={{ type: 'spring', stiffness: 500, damping: 35 }}
+            />
+          )}
         </button>
         <button
           onClick={() => setGridView(false)}
-          className={`flex-1 flex items-center justify-center gap-1.5 py-3 text-xs font-semibold border-t-2 transition-colors ${
-            !gridView ? 'border-gray-900 text-gray-900' : 'border-transparent text-gray-400'
+          className={`relative flex-1 flex items-center justify-center gap-1.5 py-3 text-xs font-semibold transition-colors ${
+            !gridView ? 'text-gray-900' : 'text-gray-400'
           }`}
         >
           ☰ Posts
+          {!gridView && (
+            <motion.span
+              layoutId="profile-tab-indicator"
+              className="absolute top-0 left-0 right-0 h-0.5 bg-gray-900 rounded-full"
+              transition={{ type: 'spring', stiffness: 500, damping: 35 }}
+            />
+          )}
         </button>
       </div>
 
       {/* ── Posts content ── */}
-      {loadingPosts ? (
-        <div className="flex justify-center py-10"><Spinner /></div>
-      ) : posts.length === 0 ? (
-        <div className="flex flex-col items-center gap-2 py-16 text-center px-6">
-          <p className="text-3xl">✍️</p>
-          <p className="text-sm text-gray-400">No posts yet.</p>
-        </div>
-      ) : showGrid ? (
-        <div className="grid grid-cols-3 gap-px bg-gray-200">
-          {postsWithMedia.map(post => (
-            <button
-              key={post.id}
-              onClick={() => setGridView(false)}
-              className="relative aspect-square overflow-hidden bg-gray-100"
-            >
-              <img
-                src={post.media_urls[0]}
-                alt=""
-                className="w-full h-full object-cover"
-              />
-              {post.is_win && (
-                <span className="absolute top-1 right-1 text-xs">🏆</span>
-              )}
-            </button>
-          ))}
-        </div>
-      ) : (
-        posts.map(post => (
-          <PostCard key={post.id} post={post} onDeleted={handlePostDeleted} onUpdated={handlePostUpdated} />
-        ))
-      )}
+      <AnimatePresence mode="wait">
+        {loadingPosts ? (
+          <motion.div key="loading" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="flex justify-center py-10">
+            <Spinner />
+          </motion.div>
+        ) : posts.length === 0 ? (
+          <motion.div key="empty" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="flex flex-col items-center gap-2 py-16 text-center px-6">
+            <p className="text-3xl">✍️</p>
+            <p className="text-sm text-gray-400">No posts yet.</p>
+          </motion.div>
+        ) : showGrid ? (
+          <motion.div key="grid" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.2 }} className="grid grid-cols-3 gap-px bg-gray-200">
+            {postsWithMedia.map((post, i) => (
+              <motion.button
+                key={post.id}
+                onClick={() => setGridView(false)}
+                className="relative aspect-square overflow-hidden bg-gray-100"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: i * 0.04, duration: 0.25 }}
+              >
+                <img
+                  src={post.media_urls[0]}
+                  alt=""
+                  className="w-full h-full object-cover"
+                />
+                {post.is_win && (
+                  <span className="absolute top-1 right-1 text-xs">🏆</span>
+                )}
+              </motion.button>
+            ))}
+          </motion.div>
+        ) : (
+          <motion.div key="list" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.2 }}>
+            <StaggerList>
+              {posts.map(post => (
+                <StaggerItem key={post.id}>
+                  <PostCard post={post} onDeleted={handlePostDeleted} onUpdated={handlePostUpdated} />
+                </StaggerItem>
+              ))}
+            </StaggerList>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* ── Delete account confirmation modal ── */}
-      {deleteConfirm && (
+      <AnimatePresence>
+        {deleteConfirm && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-6">
-          <div className="w-full max-w-sm flex flex-col gap-3 p-5 rounded-3xl border border-red-200 bg-white shadow-lg animate-scale-in">
+          <SpringScale className="w-full max-w-sm flex flex-col gap-3 p-5 rounded-3xl border border-red-200 bg-white shadow-lg">
             <p className="text-sm font-bold text-red-700">This cannot be undone.</p>
             <p className="text-xs text-red-500 leading-relaxed">
               All your posts, comments, and data will be permanently deleted.
@@ -316,18 +354,20 @@ export default function ProfilePage() {
                 Cancel
               </Button>
             </div>
-          </div>
+          </SpringScale>
         </div>
-      )}
+        )}
+      </AnimatePresence>
 
     </div>
   )
 }
 
 function StatCell({ value, label }) {
+  const count = useCountUp(value, 600)
   return (
     <div className="flex flex-col items-center gap-0.5">
-      <span className="font-bold text-lg text-gray-900 leading-tight">{value}</span>
+      <span className="font-bold text-lg text-gray-900 leading-tight">{count}</span>
       <span className="text-xs text-gray-500">{label}</span>
     </div>
   )

@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/context/AuthContext'
 import Avatar from '@/components/ui/Avatar'
@@ -10,6 +11,40 @@ import { extractFirstUrl, fetchLinkPreview } from '@/utils/linkPreview'
 import { onPostCreated } from '@/utils/badges'
 import { useToast } from '@/context/ToastContext'
 
+const PARTICLES = Array.from({ length: 12 }, (_, i) => ({
+  id: i,
+  angle: (i / 12) * 360,
+  distance: 40 + Math.random() * 40,
+}))
+
+function WinBurst({ active }) {
+  return (
+    <AnimatePresence>
+      {active && PARTICLES.map(p => {
+        const rad = (p.angle * Math.PI) / 180
+        return (
+          <motion.span
+            key={p.id}
+            className="absolute pointer-events-none text-[10px] z-10"
+            style={{ top: '50%', left: '50%' }}
+            initial={{ x: 0, y: 0, opacity: 1, scale: 1 }}
+            animate={{
+              x: Math.cos(rad) * p.distance,
+              y: Math.sin(rad) * p.distance,
+              opacity: 0,
+              scale: 0.5,
+            }}
+            exit={{}}
+            transition={{ duration: 0.6, ease: 'easeOut' }}
+          >
+            ⭐
+          </motion.span>
+        )
+      })}
+    </AnimatePresence>
+  )
+}
+
 export default function PostComposer({ onClose, onCreated }) {
   const { user, profile } = useAuth()
   const { addToast } = useToast()
@@ -20,6 +55,7 @@ export default function PostComposer({ onClose, onCreated }) {
   const [goalTitle, setGoalTitle] = useState('')
   const [goalEndDate, setGoalEndDate] = useState('')
   const [isWin, setIsWin] = useState(false)
+  const [winBurstKey, setWinBurstKey] = useState(null)
   const [linkPreview, setLinkPreview] = useState(null)
   const [previewLoading, setPreviewLoading] = useState(false)
   const [previewDismissed, setPreviewDismissed] = useState(false)
@@ -223,13 +259,20 @@ export default function PostComposer({ onClose, onCreated }) {
                     active={isGoalProposal}
                     onToggle={() => setIsGoalProposal(v => !v)}
                   />
-                  <Toggle
-                    icon={<Trophy size={16} />}
-                    label="Add to Wins Wall"
-                    sublabel="Celebrate this moment 🎉"
-                    active={isWin}
-                    onToggle={() => setIsWin(v => !v)}
-                  />
+                  <div className="relative overflow-visible">
+                    <WinBurst active={winBurstKey !== null} key={winBurstKey} />
+                    <Toggle
+                      icon={<Trophy size={16} />}
+                      label="Add to Wins Wall"
+                      sublabel="Celebrate this moment 🎉"
+                      active={isWin}
+                      onToggle={() => {
+                        const newVal = !isWin
+                        setIsWin(newVal)
+                        if (newVal) setWinBurstKey(Date.now())
+                      }}
+                    />
+                  </div>
                 </div>
 
                 {/* Goal Proposal extra fields */}

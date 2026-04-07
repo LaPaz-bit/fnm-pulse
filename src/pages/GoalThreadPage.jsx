@@ -1,10 +1,12 @@
 import { useState, useEffect, useRef } from 'react'
 import { useParams, useNavigate, useLocation } from 'react-router-dom'
+import { motion, AnimatePresence } from 'framer-motion'
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/context/AuthContext'
 import Avatar from '@/components/ui/Avatar'
 import Button from '@/components/ui/Button'
 import Spinner from '@/components/ui/Spinner'
+import { StaggerList, StaggerItem } from '@/components/ui/Motion'
 import { formatRelativeTime } from '@/utils/formatDate'
 import {
   ArrowLeft, Users, CalendarDays, CheckCircle2,
@@ -31,6 +33,7 @@ export default function GoalThreadPage() {
   const [updateText, setUpdateText] = useState('')
   const [submitting, setSubmitting] = useState(false)
   const [completing, setCompleting] = useState(false)
+  const [showCompleteCelebration, setShowCompleteCelebration] = useState(false)
   const bottomRef = useRef(null)
 
   const membersTable = isChallenge ? 'challenge_members' : 'goal_members'
@@ -132,6 +135,8 @@ export default function GoalThreadPage() {
     if (data) {
       setUpdates(prev => [...prev, data])
       setHasCompleted(true)
+      setShowCompleteCelebration(true)
+      setTimeout(() => { setShowCompleteCelebration(false) }, 2000)
       setTimeout(() => bottomRef.current?.scrollIntoView({ behavior: 'smooth' }), 50)
       const badge = await onGoalCompleted(user.id)
       if (badge) addToast({ emoji: badge.emoji, message: `Badge Earned: ${badge.label}!`, sub: badge.description })
@@ -248,18 +253,25 @@ export default function GoalThreadPage() {
             </p>
           </div>
         ) : (
-          <div className="flex flex-col gap-4">
+          <StaggerList className="flex flex-col gap-4">
             {updates.map(update => (
-              <UpdateItem key={update.id} update={update} currentUserId={user?.id} />
+              <StaggerItem key={update.id}>
+                <UpdateItem update={update} currentUserId={user?.id} />
+              </StaggerItem>
             ))}
-          </div>
+          </StaggerList>
         )}
         <div ref={bottomRef} />
       </div>
 
       {/* Bottom input area */}
       {!isArchived && isMember && (
-        <div className="sticky bottom-16 bg-white border-t border-gray-100 px-4 py-3 flex flex-col gap-2">
+        <motion.div
+          className="sticky bottom-16 bg-white border-t border-gray-100 px-4 py-3 flex flex-col gap-2"
+          initial={{ y: 60, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          transition={{ type: 'spring', stiffness: 400, damping: 30, delay: 0.15 }}
+        >
           {/* Mark complete */}
           {!hasCompleted && (
             <button
@@ -298,7 +310,7 @@ export default function GoalThreadPage() {
               </button>
             </div>
           </form>
-        </div>
+        </motion.div>
       )}
 
       {/* Not a member CTA */}
@@ -308,6 +320,32 @@ export default function GoalThreadPage() {
           <Button size="sm" onClick={join}>Join this {isChallenge ? 'Challenge' : 'Goal'} 🙌</Button>
         </div>
       )}
+
+      {/* Goal complete celebration overlay */}
+      <AnimatePresence>
+        {showCompleteCelebration && (
+          <motion.div
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 pointer-events-none"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.3 }}
+          >
+            <motion.div
+              className="flex flex-col items-center gap-3"
+              initial={{ scale: 0.5, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.8, opacity: 0 }}
+              transition={{ type: 'spring', stiffness: 300, damping: 20 }}
+            >
+              <div className="w-24 h-24 rounded-full bg-green-500 flex items-center justify-center shadow-2xl">
+                <CheckCircle2 size={52} className="text-white" strokeWidth={2.5} />
+              </div>
+              <p className="text-white font-black text-2xl drop-shadow-lg">Complete! 🎉</p>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   )
 }

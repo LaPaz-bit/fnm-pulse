@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { motion, AnimatePresence } from 'framer-motion'
 import { supabase } from '@/lib/supabase'
 import Avatar from '@/components/ui/Avatar'
 import Spinner from '@/components/ui/Spinner'
@@ -59,12 +60,19 @@ export default function LeaderboardPage() {
               key={t.key}
               onClick={() => setActiveTab(t.key)}
               className={[
-                'flex-1 flex flex-col items-center gap-0.5 py-2.5 text-[11px] font-semibold tracking-tight transition-all border-b-2',
-                isActive ? 'text-brand-pink border-brand-pink' : 'text-gray-400 border-transparent hover:text-gray-600',
+                'relative flex-1 flex flex-col items-center gap-0.5 py-2.5 text-[11px] font-semibold tracking-tight transition-colors',
+                isActive ? 'text-brand-pink' : 'text-gray-400 hover:text-gray-600',
               ].join(' ')}
             >
               <Icon size={15} strokeWidth={isActive ? 2.5 : 1.8} />
               {t.label}
+              {isActive && (
+                <motion.span
+                  layoutId="leaderboard-tab-indicator"
+                  className="absolute bottom-0 left-0 right-0 h-0.5 bg-brand-pink rounded-full"
+                  transition={{ type: 'spring', stiffness: 500, damping: 35 }}
+                />
+              )}
             </button>
           )
         })}
