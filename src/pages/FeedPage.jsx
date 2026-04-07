@@ -99,7 +99,7 @@ export default function FeedPage() {
         <div className="flex items-center justify-between">
           <motion.button
             onClick={openComposer}
-            className="w-9 h-9 flex items-center justify-center text-gray-900 hover:text-brand-pink transition"
+            className="w-9 h-9 flex items-center justify-center text-brand-pink transition"
             animate={{ scale: [1, 1.06, 1] }}
             transition={{ repeat: Infinity, duration: 3, ease: 'easeInOut' }}
             whileTap={{ scale: 0.9 }}
